@@ -54,11 +54,12 @@ def initdb():
 
     TODO: only when admin
     """
-    db=get_db() #get the cursor
+    db=get_db()
     with app.open_resource('../sql/create_tables.sql','r') as f:
         logging.warning('performing initdb: create_tables.sql')
         db.cursor().executescript(f.read())
     db.commit()
+    flash('Created new database','warning')
     return redirect(url_for('index'))
 
 @app.route('/filldbsampledata')
@@ -66,12 +67,14 @@ def fill_db_sample_data():
     """fill the database with sample data
 
     TODO: only when admin
+    TODO: check if database exists and tables ares present
     """
-    db=get_db() #get the cursor
+    db=get_db()
     with app.open_resource('../sql/insert_sampledata.sql','r') as f:
         logging.warning('inserting sample data in database')
         db.cursor().executescript(f.read())
     db.commit()
+    flash('Filled database with sample data','warning')
     return redirect(url_for('index'))
 
 if __name__=='__main__':

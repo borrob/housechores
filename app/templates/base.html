@@ -5,9 +5,10 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-		<title>Bootstrap 101 Template</title>
+		<title>Household chores</title>
 		<!-- Bootstrap -->
 		<link href="{{ url_for('static', filename='bootstrap-3.3.5-dist/css/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{ url_for('static', filename='override.css') }}" rel="stylesheet">
 		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 		<!--[if lt IE 9]>
@@ -20,8 +21,44 @@
 		<script src="{{ url_for('static', filename='bootstrap-3.3.5-dist/js/bootstrap.min.js') }}"></script>
 	</head>
 	<body>
-	{% block body %}
+		<nav class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="#">Household chores</a>
+				</div>
+				<div class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<!-- TODO: ask for confirmations -->
+								<li><a href="{{ url_for('initdb') }}">Create new database</a></li>
+								<li><a href="{{ url_for('fill_db_sample_data') }}">Add sample data</a></li>
+								<li role="separator" class="divider"></li>
+								<!-- TODO: add user and chore management -->
+								<li><a href="#">User management</a></li>
+								<li><a href="#">Chore management</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+		    </div>
+		</nav>
+		
+		<div class="container">
+
+		<!-- get flask flash messages -->
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				{% for category, message in messages %}
+					<div class="alert alert-{{ category }} alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>{{ category }}:</strong> {{ message }}</div>
+				{% endfor %}
+			{% endif %}
+		{% endwith %}
+	
+	{% block content %}
 			<h1>Hello, world!</h1>
 	{% endblock %}
+		</div>
 	</body>
 </html>
