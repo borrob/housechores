@@ -2,6 +2,7 @@
 
 --drop all the tables
 drop view if exists overview;
+drop view if exists chores_lastaction;
 drop table if exists actions;
 drop table if exists persons;
 drop table if exists chores;
@@ -61,4 +62,23 @@ create view overview as
 		chores as c
 	on
 		a.chore_id=c.id
+;
+
+--chores last action
+create view chores_lastaction as
+	select
+		c.id,
+		c.name as chore,
+		max(a.action_date) as last_actioned
+	from
+		chores as c
+	left join
+		actions as a
+	on
+		c.id=a.chore_id
+	group by
+		c.id,
+		c.name
+	order by
+		max(a.action_date) desc
 ;
