@@ -3,6 +3,7 @@
 import os
 import sqlite3
 import logging
+from datetime import date
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 #create app
@@ -37,7 +38,26 @@ def get_db():
     if not hasattr(g, 'db'):
         g.db= sqlite3.connect(app.config['DATABASE'])
         g.db.row_factory=sqlite3.Row #using row_factory to obtain column_names when we ask for data
+        logging.debug('Getting database: ' + app.config['DATABASE'])
     return g.db
+
+def get_chores():
+    """Get a list of the current chores
+    """
+    db=get_db()
+    cursor=db.execute('select *from chores')
+    rows=cursor.fetchall()
+    logging.debug('Getting the chores list')
+    return rows
+
+def get_users():
+    """Get a list of the current users
+    """
+    db=get_db()
+    cursor=db.execute('select * from persons')
+    rows=cursor.fetchall()
+    logging.debug('Getting the persons list')
+    return rows
 
 @app.teardown_appcontext
 def close_db(error):
@@ -87,7 +107,8 @@ def overview():
     db=get_db()
     cursor=db.execute('select * from overview order by action_date desc, chore asc')
     rows=cursor.fetchall()
-    return render_template('overview.html', rows=rows)
+    today=date.today().strftime('%Y-%m-%d')
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(),today=today)
 
 @app.route('/chores_lastaction')
 def chores_lastaction():
@@ -98,6 +119,24 @@ def chores_lastaction():
     cursor=db.execute('select * from chores_lastaction')
     rows=cursor.fetchall()
     return render_template('chores_lastaction.html', rows=rows)
+
+@app.route('/new_action', methods=['POST'])
+def new_action():
+    """Get the URL request with the data for a newly performed action
+
+    TODO: check loging
+    TODO: check if database and schemas exist
+    TODO: check SQL-injection
+    TODO: validate dataentry
+    TODO: add try/catch
+    """
+    db=get_db()
+    db.execute('insert into actions (action_date, person_id, chore_id) values (?, ?, ?)',
+        [request.form['date'], request.form['person'], request.form['chore']])
+    db.commit()
+    flash('New action added', 'success')
+    return redirect(url_for('overview'))
+
 
 if __name__=='__main__':
     app.run(host='0.0.0.0')

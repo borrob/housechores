@@ -1,16 +1,45 @@
 {% extends "base.html" %}
 {% block content %}
+	<h2>Overview all actions</h2>
 	<table class="table table-striped">
 		<tr>
 			<th>Date</th>
 			<th>Name</th>
 			<th>Chore</th>
+			<th></th>
 		</tr>
+		<tr>
+			<form action="{{ url_for('new_action')}}" method="POST">
+				<td>
+					<input type="date" name='date' value="{{ today }}"/>
+				</td>
+				<td>
+					<select name="person">
+						<option value=-1>None</option>
+						{% for user in users %}
+							<option value='{{user.id}}'>{{user.name}}</option>
+						{% endfor %}
+					</select>
+				<td>
+					<select name="chore">
+						<option value=-1>None</option>
+						{% for chore in chores %}
+							<option value='{{chore.id}}'>{{chore.name}}</option>
+						{% endfor %}
+					</select>
+				</td>
+				<td>
+					<input type="submit" value="add"/>
+				</td>
+		</form>
+		</tr>
+
 		{% for row in rows %}
 			<tr>
 				<td>{{ row.action_date }}</td>
 				<td>{{ row.person_name }}</td>
 				<td>{{ row.chore }}</td>
+				<td></td>
 			</tr>
 		{% endfor %}
 	</table>
