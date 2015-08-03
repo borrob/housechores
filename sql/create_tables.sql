@@ -44,6 +44,7 @@ create table actions (
 --overview
 create view overview as
 	select
+		a.id,
 		a.action_date,
 		p.name as person_name,
 		r.name as role,

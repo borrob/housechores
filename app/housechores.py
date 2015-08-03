@@ -135,8 +135,19 @@ def new_action():
         [request.form['date'], request.form['person'], request.form['chore']])
     db.commit()
     flash('New action added', 'success')
+    logging.info('New action added')
     return redirect(url_for('overview'))
 
+@app.route('/delete_action/<id>')
+def delete_action(id):
+    """Delete the action with id = <id>
+    """
+    db=get_db()
+    db.execute('delete from actions where id = ?',[id])
+    db.commit()
+    flash('Action removed','success')
+    logging.info('Action %s removed' %(id))
+    return redirect(url_for('overview'))
 
 if __name__=='__main__':
     app.run(host='0.0.0.0')

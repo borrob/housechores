@@ -8,7 +8,7 @@
 			<th>Chore</th>
 			<th></th>
 		</tr>
-		<tr>
+		<tr class="info">
 			<form action="{{ url_for('new_action')}}" method="POST">
 				<td>
 					<input type="date" name='date' value="{{ today }}"/>
@@ -39,7 +39,7 @@
 				<td>{{ row.action_date }}</td>
 				<td>{{ row.person_name }}</td>
 				<td>{{ row.chore }}</td>
-				<td></td>
+				<td><a href="{{ url_for('delete_action', id=row.id) }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></form></td>
 			</tr>
 		{% endfor %}
 	</table>
