@@ -34,6 +34,7 @@ def get_db():
     """
     if not hasattr(g, 'db'):
         g.db= sqlite3.connect(app.config['DATABASE'])
+        g.db.row_factory=sqlite3.Row #using row_factory to obtain column_names when we ask for data
     return g.db
 
 @app.teardown_appcontext
@@ -76,6 +77,25 @@ def fill_db_sample_data():
     db.commit()
     flash('Filled database with sample data','warning')
     return redirect(url_for('index'))
+
+@app.route('/overview')
+def overview():
+    """Generate a simple overview of all the actions
+    """
+    db=get_db()
+    cursor=db.execute('select * from overview order by action_date desc, chore asc')
+    rows=cursor.fetchall()
+    return render_template('overview.html', rows=rows)
+
+@app.route('/chores_lastaction')
+def chores_lastaction():
+    """Generate a simple overview of all the chores with their last actioned
+    date.
+    """
+    db=get_db()
+    cursor=db.execute('select * from chores_lastaction')
+    rows=cursor.fetchall()
+    return render_template('chores_lastaction.html', rows=rows)
 
 if __name__=='__main__':
     app.run(host='0.0.0.0')

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+	<table class="table table-striped">
+		<tr>
+			<th>Chore ID</th>
+			<th>Chore</th>
+			<th>Last Actioned</th>
+		</tr>
+		{% for row in rows %}
+			<tr>
+				<td>{{ row.id }}</td>
+				<td>{{ row.chore }}</td>
+				<td>{{ row.last_actioned }}</td>
+			</tr>
+		{% endfor %}
+	</table>
+{% endblock %}
