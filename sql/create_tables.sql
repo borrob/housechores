@@ -68,7 +68,7 @@ create view overview as
 --chores last action
 create view chores_lastaction as
 	select
-		c.id,
+		c.id as chore_id,
 		c.name as chore,
 		max(a.action_date) as last_actioned
 	from

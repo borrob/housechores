@@ -149,5 +149,35 @@ def delete_action(id):
     logging.info('Action %s removed' %(id))
     return redirect(url_for('overview'))
 
+@app.route('/copy_to_today/<id>')
+def copy_to_today(id):
+    """copy the action with action_id=<id> to today
+    """
+    g.current_user=1 #TODO: user real g.current_user
+    db=get_db()
+    cursor=db.execute('select * from actions where id = ?', [id])
+    row=cursor.fetchone()
+    chore=row['chore_id']
+    today=str(date.today().strftime('%Y-%m-%d'))
+    db.execute('insert into actions (action_date,person_id,chore_id) values (?,?,?)' ,[today, g.current_user, chore])
+    db.commit()
+    flash('Action copied to today','success')
+    logging.info('Action with id %s copied to today' %id)
+    return redirect(url_for('overview'))
+
+@app.route('/new_from_chore/<id>')
+def new_from_chore(id):
+    """Inser new action for today of chore with id=<id>
+    """
+    g.current_user=1 #TODO: real current_user
+    today=str(date.today().strftime('%Y-%m-%d'))
+    db=get_db()
+    db.execute('insert into actions (action_date, person_id, chore_id) values(?,?,?)', [today, g.current_user, id])
+    db.commit()
+    flash('Chore added to today','success')
+    logging.info('Action added')
+    return redirect( url_for('chores_lastaction'))
+    
+
 if __name__=='__main__':
     app.run(host='0.0.0.0')
