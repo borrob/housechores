@@ -3,7 +3,7 @@
 import os
 import sqlite3
 import logging
-from datetime import datetime
+from datetime import datetime, date
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 #create app
@@ -108,7 +108,7 @@ def overview():
     cursor=db.execute('select * from overview order by action_date desc, chore asc')
     rows=cursor.fetchall()
     today=datetime.today().strftime('%Y-%m-%d')
-    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users())
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today)
 
 @app.template_filter()
 def dayssince(value, the_format='%Y-%m-%d'):

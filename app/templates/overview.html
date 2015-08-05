@@ -39,7 +39,7 @@
 				<td>{{ row.action_date }}</td>
 				<td>{{ row.person_name }}</td>
 				<td>{{ row.chore }}</td>
-				<td><a href="{{ url_for('delete_action', id=row.chore_id) }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>  <a href="{{ url_for('copy_to_today',id=row.chore_id) }}"><span class="glyphicon glyphicon-expand" aria-hidden="true"></span></a></td>
+				<td><a href="{{ url_for('delete_action', id=row.id) }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>  <a href="{{ url_for('copy_to_today',id=row.id) }}"><span class="glyphicon glyphicon-expand" aria-hidden="true"></span></a></td>
 			</tr>
 		{% endfor %}
 	</table>
