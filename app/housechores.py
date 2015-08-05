@@ -3,7 +3,7 @@
 import os
 import sqlite3
 import logging
-from datetime import date
+from datetime import datetime
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 #create app
@@ -109,6 +109,17 @@ def overview():
     rows=cursor.fetchall()
     today=date.today().strftime('%Y-%m-%d')
     return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(),today=today)
+
+@app.template_filter()
+def dayssince(value, the_format='%Y-%m-%d'):
+        today=datetime.today()
+        if value==None:
+            return None
+        else:
+            the_day= datetime.strptime(value,the_format)
+            return (today-the_day).days
+
+app.jinja_env.filters['dayssince'] = dayssince
 
 @app.route('/chores_lastaction')
 def chores_lastaction():
