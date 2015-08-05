@@ -7,7 +7,7 @@
 			<th>Chore</th>
 			<th>Last Actioned</th>
 			<th>#Days</th>
-			<td></td>
+			<th></th>
 		</tr>
 		{% for row in rows %}
 			<tr>
@@ -15,7 +15,7 @@
 				<td>{{ row.chore }}</td>
 				<td>{{ row.last_actioned }}</td>
 				<td>{{ row.last_actioned | dayssince }}
-				<td><a href={{ url_for('new_from_chore',id=row.chore_id) }}><span class="glyphicon glyphicon-expand" aria-hidden="true"></span></a></td>
+				<td><a href={{ url_for('delete_chore',id=row.chore_id) }}><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>  <a href={{ url_for('new_from_chore',id=row.chore_id) }}><span class="glyphicon glyphicon-expand" aria-hidden="true"></span></a></td>
 			</tr>
 		{% endfor %}
 	</table>

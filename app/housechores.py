@@ -107,8 +107,8 @@ def overview():
     db=get_db()
     cursor=db.execute('select * from overview order by action_date desc, chore asc')
     rows=cursor.fetchall()
-    today=date.today().strftime('%Y-%m-%d')
-    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(),today=today)
+    today=datetime.today().strftime('%Y-%m-%d')
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users())
 
 @app.template_filter()
 def dayssince(value, the_format='%Y-%m-%d'):
@@ -187,6 +187,19 @@ def new_from_chore(id):
     db.commit()
     flash('Chore added to today','success')
     logging.info('Action added')
+    return redirect( url_for('chores_lastaction'))
+
+@app.route('/delete_chore<id>')
+def delete_chore(id):
+    """Delete chore with id=id
+
+    TODO: only for admin
+    """
+    db=get_db()
+    db.execute('delete from chores where id = ?',[id])
+    db.commit()
+    flash('Chore removed')
+    logging.info('Removed chore with id=%s' %id)
     return redirect( url_for('chores_lastaction'))
     
 
