@@ -189,7 +189,7 @@ def new_from_chore(id):
     logging.info('Action added')
     return redirect( url_for('chores_lastaction'))
 
-@app.route('/delete_chore<id>')
+@app.route('/delete_chore/<id>')
 def delete_chore(id):
     """Delete chore with id=id
 
@@ -218,6 +218,23 @@ def new_chore():
     logging.info('New chore added: %s' %(request.form['chore']))
     return redirect(url_for('chores_lastaction'))
 
+@app.route('/edit_chore',methods=['POST'])
+def edit_chore():
+    """Edit a chore
+
+    The POST data should contain the chore_id and the new chore description
+    TODO: check login
+    TODO: check if database and schemas exist
+    TODO: check SQL injection
+    TODO: validate dataentry
+    TODO: add try/catch
+    """
+    db=get_db()
+    db.execute('update chores set name = ? where id = ?',[request.form['chore'], request.form['id']])
+    db.commit()
+    flash('Chore updated', 'success')
+    logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
+    return redirect(url_for('chores_lastaction'))
 
 if __name__=='__main__':
     app.run(host='0.0.0.0')
