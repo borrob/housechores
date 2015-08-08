@@ -9,6 +9,19 @@
 			<th>#Days</th>
 			<th></th>
 		</tr>
+		<tr>
+			<form action="{{ url_for('new_chore')}}" method="POST">
+				<td></td>
+				<td>
+					<input type="text" name='chore' value="new chore"/>
+				</td>
+				<td></td>
+				<td></td>
+				<td>
+					<input type="submit" value="add"/>
+				</td>
+			</form>
+		</tr>
 		{% for row in rows %}
 			<tr>
 				<td>{{ row.chore_id }}</td>
