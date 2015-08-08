@@ -15,14 +15,14 @@
 				</td>
 				<td>
 					<select name="person">
-						<option value=-1>None</option>
+						<option value=-1>none</option>
 						{% for user in users %}
 							<option value='{{user.id}}'>{{user.name}}</option>
 						{% endfor %}
 					</select>
 				<td>
 					<select name="chore">
-						<option value=-1>None</option>
+						<option value=-1>none</option>
 						{% for chore in chores %}
 							<option value='{{chore.id}}'>{{chore.name}}</option>
 						{% endfor %}
@@ -39,8 +39,77 @@
 				<td>{{ row.action_date }}</td>
 				<td>{{ row.person_name }}</td>
 				<td>{{ row.chore }}</td>
-				<td><a href="{{ url_for('delete_action', id=row.id) }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>  <a href="{{ url_for('copy_to_today',id=row.id) }}"><span class="glyphicon glyphicon-expand" aria-hidden="true"></span></a></td>
+				<td><a href="{{ url_for('delete_action', id=row.id) }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>  <a href="#" onclick="edit( {{ row.id }}, '{{ row.chore }}', '{{ row.person_name }}', '{{ row.action_date }}')"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>  <a href="{{ url_for('copy_to_today',id=row.id) }}"><span class="glyphicon glyphicon-expand" aria-hidden="true"></span></a></td>
 			</tr>
 		{% endfor %}
 	</table>
+
+	<!-- editModal -->
+	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="editModalLabel">Edit action</h4>
+				</div>
+				<div class="modal-body">
+				<form class="form-horizontal" id='editModalForm' method="POST" action='{{ url_for('edit_action') }}'>
+					<div class="form-group">
+						<label for='editModalID' class='col-sm-2 control-label'>Action id</label>
+						<div class="col-sm-2">
+							<input name='id' type=number class='form-control' id='editModalID' readonly/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for='editModalChore' class='col-sm-2 control-label'>Chore</label>
+						<div class="col-sm-10">
+							<select name="chore" class="form-control" id="editModalChore">
+								<option>none</option>
+								{% for chore in chores %}
+									<option>{{chore.name}}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for='editModalName' class='col-sm-2 control-label'>Name</label>
+						<div class="col-sm-10">
+							<select name="person" class="form-control" id="editModalName">
+								<option>none</option>
+								{% for user in users %}
+									<option>{{user.name}}</option>
+								{% endfor %}
+								</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for='editModalDate' class='col-sm-2 control-label'>Date</label>
+						<div class="col-sm-10">
+							<input type=date name='date' class='form-control' id='editModalDate'/>
+						</div>
+					</div>
+				</form>
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button id="editModalSavebutton" type="button" class="btn btn-primary">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+	function edit(id, chore, name, the_date){
+		$('#editModalID').val(id);
+		$('#editModalChore').val(chore);
+		$('#editModalName').val(name);
+		$('#editModalDate').val(the_date);
+		$('#editModal').modal('show');
+	}
+
+	$('#editModalSavebutton').click(function(){
+		$('form#editModalForm')[0].submit();
+	});
+	</script>
+
 {% endblock %}

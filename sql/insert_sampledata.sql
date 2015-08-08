@@ -1,9 +1,12 @@
+insert into roles values (-1,'none');
 insert into roles values (1,'admin');
 insert into roles values (2,'user');
 
+insert into persons values (-1,'none','',-1);
 insert into persons values (1,'rob','rob',1);
 insert into persons values (2,'random','asd',2);
 
+insert into chores values (-1,'none');
 insert into chores values (1,'dishes');
 insert into chores values (2,'vacuum');
 insert into chores values (3,'groceries jumbo');

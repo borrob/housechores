@@ -45,7 +45,7 @@ def get_chores():
     """Get a list of the current chores
     """
     db=get_db()
-    cursor=db.execute('select *from chores')
+    cursor=db.execute('select *from chores where id>=0')
     rows=cursor.fetchall()
     logging.debug('Getting the chores list')
     return rows
@@ -54,10 +54,30 @@ def get_users():
     """Get a list of the current users
     """
     db=get_db()
-    cursor=db.execute('select * from persons')
+    cursor=db.execute('select * from persons where id>=0')
     rows=cursor.fetchall()
     logging.debug('Getting the persons list')
     return rows
+
+def get_userid(name):
+    """Get the userid from person with name=name
+
+    TODO: check if database and schema exist
+    """
+    db=get_db()
+    cursor = db.execute('select id from persons where name=?',[name])
+    row=cursor.fetchone()
+    return row[0]
+
+def get_choreid(chore):
+    """Get the choreid from chore with name=name
+
+    TODO: check if database and schema exist
+    """
+    db=get_db()
+    cursor = db.execute('select id from chores where name=?',[chore])
+    row=cursor.fetchone()
+    return row[0]
 
 @app.teardown_appcontext
 def close_db(error):
@@ -158,6 +178,26 @@ def delete_action(id):
     db.commit()
     flash('Action removed','success')
     logging.info('Action %s removed' %(id))
+    return redirect(url_for('overview'))
+
+@app.route('/edit_action', methods=['POST'])
+def edit_action():
+    """Edit the action from the post request
+
+    The POST data should contain the action_id and the new chore description
+    TODO: check login
+    TODO: check if database and schemas exist
+    TODO: check SQL injection
+    TODO: validate dataentry
+    TODO: add try/catch
+    """
+    db=get_db()
+    choreid=get_choreid(request.form['chore'])
+    personid=get_userid(request.form['person'])
+    db.execute('update actions set chore_id=?, action_date=?, person_id=? where id=?',[choreid,request.form['date'],personid, request.form['id']])
+    db.commit()
+    flash('Updated action','success')
+    logging.info('Updated action with id=%s' %(request.form['id']))
     return redirect(url_for('overview'))
 
 @app.route('/copy_to_today/<id>')
