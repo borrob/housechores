@@ -56,6 +56,7 @@ def test_sample_data_loaded(client):
     rv=client.get('/overview')
     assert b'<td>dishes</td>' in rv.data
 
+### Actions test
 def test_remove_action(client):
     """Test deleting an action
     """
@@ -96,5 +97,34 @@ def test_edit_action(client):
     assert b'<td>groceries lidl</td>' in rv.data
     assert b'<td>random</td>' in rv.data
 
+### Chores test
+def test_remove_chore(client):
+    """Test to remove an existing chore
+    """
+    sample_db(client)
+    rv=client.get('/chores_lastaction')
+    assert b'<td>dishes</td>' in rv.data
+    rv=client.get('/delete_chore/1', follow_redirects=True)
+    assert b'Chore removed' in rv.data
+    assert b'<td>dishes</td>' not in rv.data
+
+def test_add_chore(client):
+    """Test adding a chore
+    """
+    rv=client.post('/new_chore', data=dict(chore='thisisanewchore'),follow_redirects=True)
+    assert b'New chore added' in rv.data #test the flash message
+    assert b'<td>thisisanewchore</td>' in rv.data #test the actual insert
+
+def test_edit_chore(client):
+    """Test edit chore
+    """
+    sample_db(client)
+    rv=client.get('/chores_lastaction')
+    assert b'<td>close curtains</td>' not in rv.data
+    #edit action
+    rv=client.post('/edit_chore', data=dict(id=5,chore='close curtains'), follow_redirects=True)
+    assert b'Chore updated' in rv.data
+    assert b'<td>close curtains</td>' in rv.data
+
 if __name__=='__main__':
-    pytest.main()
+    pytest.main(['-vv'])
