@@ -41,6 +41,15 @@ def get_db():
         logging.debug('Getting database: ' + app.config['DATABASE'])
     return g.db
 
+def init_the_db():
+    """Initialise the database
+    """
+    db=get_db()
+    with app.open_resource('../sql/create_tables.sql','r') as f:
+        logging.warning('performing initdb: create_tables.sql')
+        db.cursor().executescript(f.read())
+    db.commit()
+
 def get_chores():
     """Get a list of the current chores
     """
@@ -79,6 +88,9 @@ def get_choreid(chore):
     row=cursor.fetchone()
     return row[0]
 
+################################################################################
+# APP ADMIN
+#
 @app.teardown_appcontext
 def close_db(error):
     """Closes the database again at the end of the request.
@@ -86,6 +98,20 @@ def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
 
+@app.template_filter()
+def dayssince(value, the_format='%Y-%m-%d'):
+        today=datetime.today()
+        if value==None:
+            return None
+        else:
+            the_day= datetime.strptime(value,the_format)
+            return (today-the_day).days
+
+app.jinja_env.filters['dayssince'] = dayssince
+
+################################################################################
+# APP ROUTES
+#
 @app.route('/')
 def index():
     logging.debug('returning index')
@@ -97,11 +123,7 @@ def initdb():
 
     TODO: only when admin
     """
-    db=get_db()
-    with app.open_resource('../sql/create_tables.sql','r') as f:
-        logging.warning('performing initdb: create_tables.sql')
-        db.cursor().executescript(f.read())
-    db.commit()
+    init_the_db()
     flash('Created new database','warning')
     return redirect(url_for('index'))
 
@@ -120,6 +142,7 @@ def fill_db_sample_data():
     flash('Filled database with sample data','warning')
     return redirect(url_for('index'))
 
+#PAGES
 @app.route('/overview')
 def overview():
     """Generate a simple overview of all the actions
@@ -127,19 +150,9 @@ def overview():
     db=get_db()
     cursor=db.execute('select * from overview order by action_date desc, chore asc')
     rows=cursor.fetchall()
+    rows=[dict(id=-1,action_date=None, person_name=None,chore='No chores yet')] if len(rows)==0 else rows
     today=datetime.today().strftime('%Y-%m-%d')
     return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today)
-
-@app.template_filter()
-def dayssince(value, the_format='%Y-%m-%d'):
-        today=datetime.today()
-        if value==None:
-            return None
-        else:
-            the_day= datetime.strptime(value,the_format)
-            return (today-the_day).days
-
-app.jinja_env.filters['dayssince'] = dayssince
 
 @app.route('/chores_lastaction')
 def chores_lastaction():
@@ -151,6 +164,7 @@ def chores_lastaction():
     rows=cursor.fetchall()
     return render_template('chores_lastaction.html', rows=rows)
 
+#ACTIONS
 @app.route('/new_action', methods=['POST'])
 def new_action():
     """Get the URL request with the data for a newly performed action
@@ -216,6 +230,7 @@ def copy_to_today(id):
     logging.info('Action with id %s copied to today' %id)
     return redirect(url_for('overview'))
 
+#CHORES
 @app.route('/new_from_chore/<id>')
 def new_from_chore(id):
     """Inser new action for today of chore with id=<id>
@@ -241,7 +256,7 @@ def delete_chore(id):
     flash('Chore removed')
     logging.info('Removed chore with id=%s' %id)
     return redirect( url_for('chores_lastaction'))
-    
+
 @app.route('/new_chore', methods=['POST'])
 def new_chore():
     """Get the URL request with data for a new chore
@@ -276,5 +291,8 @@ def edit_chore():
     logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
     return redirect(url_for('chores_lastaction'))
 
+################################################################################
+# RUN
+#
 if __name__=='__main__':
     app.run(host='0.0.0.0')
