@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+		<title>Household chores</title>
+		<!-- Bootstrap -->
+		<link href="{{ url_for('static', filename='bootstrap-3.3.5-dist/css/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{ url_for('static', filename='override.css') }}" rel="stylesheet">
+		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+			<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+		<![endif]-->
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="{{ url_for('static', filename='jquery-2.1.4.min.js') }}"></script>
+			<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="{{ url_for('static', filename='bootstrap-3.3.5-dist/js/bootstrap.min.js') }}"></script>
+	</head>
+	<body>
+		
+		<div class="container">
+
+	
+		<div id='loginmodal' class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Housechores login</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form-horizontal" method="POST" action="{{ url_for('login') }}" id="loginform">
+							<div class="form-group">
+								<label for="username" class="col-sm-2 control-label">Username</label>
+								<div class="col-sm-10">
+									<input type="text" name="user" class="form-control" id="username" placeholder="Your name"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="pass" class="col-sm-2 control-label">Password</label>
+								<div class="col-sm-10">
+									<input type="password" name="password" class="form-control" id="pass" />
+								</div>
+							</div>
+						</form>
+						<!-- get flask flash messages -->
+						{% with messages = get_flashed_messages(with_categories=true) %}
+							{% if messages %}
+								{% for category, message in messages %}
+									<div class="alert alert-{{ category }} alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>{{ category }}:</strong> {{ message }}</div>
+								{% endfor %}
+							{% endif %}
+						{% endwith %}
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="loginbutton" class="btn btn-primary">Login</button>
+					</div>
+					</div><!-- /.modal-content -->
+				</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		</div>
+		<script>
+			$('#loginmodal').modal('show');
+			$('#loginbutton').click(function(){
+				$('form#loginform')[0].submit();
+			});
+		</script>
+	</body>
+</html>

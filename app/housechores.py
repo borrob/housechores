@@ -5,6 +5,7 @@ import sqlite3
 import logging
 from datetime import datetime, date
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
+from flask_debugtoolbar import DebugToolbarExtension
 
 #create app
 app = Flask(__name__)
@@ -13,6 +14,7 @@ app = Flask(__name__)
 app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'chores.db'),
     DEBUG=True,
+    DEBUG_TB_INTERCEPT_REDIRECTS=False,
     SECRET_KEY='thisisareallysecretkeydon7you71nk',
     USERNAME='admin',
     PASSWORD='admin',
@@ -23,6 +25,8 @@ app.config.update(dict(
 ))
 
 app.config.from_envvar('HOUSECHORESETTINGS', silent=True)
+app.debug=app.config['DEBUG']
+toolbar=DebugToolbarExtension(app)
 
 # SETUP LOGGING
 logging.basicConfig(
@@ -43,11 +47,16 @@ def get_db():
 
 def init_the_db():
     """Initialise the database
+    
+    And set up the default admin account.
     """
     db=get_db()
     with app.open_resource('../sql/create_tables.sql','r') as f:
         logging.warning('performing initdb: create_tables.sql')
         db.cursor().executescript(f.read())
+        db.commit()
+    db.execute("insert into roles (id, name) values (1, 'admin')")
+    db.execute("insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1)")
     db.commit()
 
 def get_chores():
@@ -88,6 +97,18 @@ def get_choreid(chore):
     row=cursor.fetchone()
     return row[0]
 
+def check_login(user, password):
+    """Check the provided username and password
+    """
+    db=get_db()
+    cur=db.execute('select id from persons where name=? and password=?',[user.lower(), password])
+    row=cur.fetchone()
+    if row:
+        return row[0]
+    else:
+        return None
+
+
 ################################################################################
 # APP ADMIN
 #
@@ -97,6 +118,31 @@ def close_db(error):
     """
     if hasattr(g, 'db'):
         g.db.close()
+
+@app.before_request
+def before_request():
+    """before processing: check if user is logged in.
+    or wants to login
+    or is requesting static data
+    """
+    try:
+        path=request.path.split('/')[1]
+        extension=request.path.split('/')[-1].split('.')[-1]
+    except:
+        path=None
+        extension=None
+    if 'uid' in session:
+        pass
+    elif (request.endpoint=='login' or request.endpoint=='loginscreen'):
+        pass
+    elif (path=='static' and extension in ('js','css')):
+        pass
+    elif (path=='_debug_toolbar' and extension in ('js', 'css')):
+        pass
+    else:
+        flash("You don't fool me! Login first!","danger")
+        logging.warning('False attempt on %s: not logged in.' %(request.path))
+        return redirect(url_for('loginscreen'))
 
 @app.template_filter()
 def dayssince(value, the_format='%Y-%m-%d'):
@@ -141,6 +187,56 @@ def fill_db_sample_data():
     db.commit()
     flash('Filled database with sample data','warning')
     return redirect(url_for('index'))
+
+@app.route('/loginscreen')
+def loginscreen():
+    """Show the loginscreen
+
+    If there is no databse yet (and thus no way of checking user credentials),
+    init the database and create a stand admin account. This should only happen
+    on first use.
+    """
+    try:
+        f=app.open_resource(app.config['DATABASE'])
+        f.close()
+        return render_template('login.html')
+    except IOError:
+        # database doesn't exist yet --> create it
+        init_the_db()
+        g.current_user=1
+        session['uid']=1
+        flash('Created default account: user=admin, pass=admin','warning')
+        logging.warning('Created a default admin account')
+        return redirect(url_for('index'))
+
+@app.route('/login', methods=['POST'])
+def login():
+    """Check user login
+
+    if valid: redirect to index
+    if not valid: return to loginscreen
+    """
+    if request.form['user'] and request.form['password']:
+        pass_login=check_login(request.form['user'], request.form['password'])
+        if pass_login:
+            logging.info('User %s passed login'%(request.form['user']))
+            g.current_user=pass_login
+            session['uid']=pass_login
+            return redirect(url_for('index'))
+    logging.warning('User did NOT pass login')
+    flash('Wrong username / password combination', 'danger')
+    return redirect(url_for('loginscreen'))
+
+@app.route('/logout')
+def logout():
+    """Log out
+    """
+    #TODO write before_request and then we can use the g.current_user
+    #logging.info('User %s trying to log out' %(g.current_user))
+    session.pop('uid')
+    g.current_user=None
+    flash('You were logged out','info')
+    return redirect(url_for('loginscreen'))
 
 #PAGES
 @app.route('/overview')
@@ -218,7 +314,6 @@ def edit_action():
 def copy_to_today(id):
     """copy the action with action_id=<id> to today
     """
-    g.current_user=1 #TODO: user real g.current_user
     db=get_db()
     cursor=db.execute('select * from actions where id = ?', [id])
     row=cursor.fetchone()
@@ -253,7 +348,7 @@ def delete_chore(id):
     db=get_db()
     db.execute('delete from chores where id = ?',[id])
     db.commit()
-    flash('Chore removed')
+    flash('Chore removed', 'info')
     logging.info('Removed chore with id=%s' %id)
     return redirect( url_for('chores_lastaction'))
 
@@ -269,7 +364,7 @@ def new_chore():
     db=get_db()
     db.execute('insert into chores (name) values (?)',[request.form['chore']])
     db.commit()
-    flash('New chore added')
+    flash('New chore added', 'success')
     logging.info('New chore added: %s' %(request.form['chore']))
     return redirect(url_for('chores_lastaction'))
 
