@@ -77,6 +77,24 @@ def get_users():
     logging.debug('Getting the persons list')
     return rows
 
+def get_users_role():
+    """Get a list of the users and their roles
+    """
+    db=get_db()
+    cursor=db.execute('select * from users')
+    rows=cursor.fetchall()
+    logging.debug('Getting the users list')
+    return rows
+
+def get_roles():
+    """Get a list of the roles
+    """
+    db=get_db()
+    cursor=db.execute('select * from roles')
+    rows=cursor.fetchall()
+    logging.debug('Getting the roles list')
+    return rows
+
 def get_userid(name):
     """Get the userid from person with name=name
 
@@ -260,6 +278,14 @@ def chores_lastaction():
     rows=cursor.fetchall()
     return render_template('chores_lastaction.html', rows=rows)
 
+@app.route('/user_admin')
+def user_admin():
+    """Render the user and role admin page
+    """
+    users=get_users_role();
+    roles=get_roles()
+    return render_template('user_admin.html', users=users, roles=roles)
+
 #ACTIONS
 @app.route('/new_action', methods=['POST'])
 def new_action():
@@ -385,6 +411,54 @@ def edit_chore():
     flash('Chore updated', 'success')
     logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
     return redirect(url_for('chores_lastaction'))
+
+#USERS
+@app.route('/new_user', methods=['POST'])
+def new_user():
+    """Get the URL request with data for a new user
+    TODO: check loging
+    TODO: check if database and schemas exist
+    TODO: check SQL-injection
+    TODO: validate dataentry
+    TODO: add try/catch
+    """
+    db=get_db()
+    db.execute('insert into persons (name, role_id) values (?,?)',[request.form['name'], request.form['roles']])
+    db.commit()
+    flash('New user added', 'success')
+    logging.info('New user added: %s' %(request.form['name']))
+    return redirect(url_for('user_admin'))
+
+@app.route('/delete_user/<id>')
+def delete_user(id):
+    """Delete user with id=id
+
+    TODO: only for admin
+    """
+    db=get_db()
+    db.execute('delete from persons where id = ?',[id])
+    db.commit()
+    flash('User removed', 'info')
+    logging.info('Removed user with id=%s' %id)
+    return redirect( url_for('user_admin'))
+
+@app.route('/edit_user', methods=['POST'])
+def edit_user():
+    """Edit a user
+
+    The POST data should contain the user_id and the new user
+    TODO: check login
+    TODO: check if database and schemas exist
+    TODO: check SQL injection
+    TODO: validate dataentry
+    TODO: add try/catch
+    """
+    db=get_db()
+    db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
+    db.commit()
+    flash('User  updated', 'success')
+    logging.info('Edited user with id=%s' %(request.form['id']))
+    return redirect(url_for('user_admin'))
 
 ################################################################################
 # RUN

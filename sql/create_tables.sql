@@ -3,6 +3,7 @@
 --drop all the tables
 drop view if exists overview;
 drop view if exists chores_lastaction;
+drop view if exists users;
 drop table if exists actions;
 drop table if exists persons;
 drop table if exists chores;
@@ -82,4 +83,19 @@ create view chores_lastaction as
 		c.name
 	order by
 		max(a.action_date) desc
+;
+
+--users
+create view users as
+	select
+		p.id as person_id,
+		p.name as person_name,
+		r.id as role_id,
+		r.name as role_name
+	from
+		persons as p
+	left join
+		roles as r
+	on
+		p.role_id=r.id
 ;
