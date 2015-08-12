@@ -55,9 +55,6 @@ def init_the_db():
         logging.warning('performing initdb: create_tables.sql')
         db.cursor().executescript(f.read())
         db.commit()
-    db.execute("insert into roles (id, name) values (1, 'admin')")
-    db.execute("insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1)")
-    db.commit()
 
 def get_chores():
     """Get a list of the current chores
