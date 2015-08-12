@@ -99,3 +99,9 @@ create view users as
 	on
 		p.role_id=r.id
 ;
+
+--insert standard data
+insert into roles values (-1,'none');
+insert into roles values (1, 'admin');
+insert into roles values (2,'user');
+insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1);
