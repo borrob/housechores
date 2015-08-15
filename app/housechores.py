@@ -453,7 +453,7 @@ def edit_user():
     db=get_db()
     db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
     db.commit()
-    flash('User  updated', 'success')
+    flash('User updated', 'success')
     logging.info('Edited user with id=%s' %(request.form['id']))
     return redirect(url_for('user_admin'))
 

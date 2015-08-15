@@ -209,5 +209,50 @@ def test_logout(client):
     assert b'Hello there' not in rv.data
     assert b'Login first' in rv.data
 
+### user admin
+def test_useradmin(client):
+    """Test the user admin page
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>rob</td>' in rv.data
+    assert b'<td>admin</td>' in rv.data
+    assert b'<td>rob</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
+
+def test_add_user(client):
+    """Test adding a new user
+    """
+    login(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>dude</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
+    rv=client.post('/new_user', data=dict(name='dude', roles=2), follow_redirects=True)
+    assert b'New user added' in rv.data
+    assert b'<td>dude</td><td>user</td>' in rv.data.replace('\n','').replace('\t','')
+
+def test_remove_user(client):
+    """Test removing a user
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>random</td><td>user</td>' in rv.data.replace('\n','').replace('\t','')
+    rv=client.get('/delete_user/3', follow_redirects=True)
+    assert b'User removed' in rv.data
+    assert b'<td>random</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
+
+def test_edit_user(client):
+    """Test user chore
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>newname</td>' not in rv.data
+    assert b'<td>newname</td><td>admin</td>' not in rv.data.replace('\n','').replace('\t','')
+    #edit user
+    rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3), follow_redirects=True)
+    assert b'User updated' in rv.data
+    assert b'<td>newname</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
+
 if __name__=='__main__':
     pytest.main(['-vv'])
