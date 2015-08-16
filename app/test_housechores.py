@@ -237,7 +237,7 @@ def test_remove_user(client):
     sample_db(client)
     rv=client.get('/user_admin', follow_redirects=True)
     assert b'<td>random</td><td>user</td>' in rv.data.replace('\n','').replace('\t','')
-    rv=client.get('/delete_user/3', follow_redirects=True)
+    rv=client.get('/delete_user/4', follow_redirects=True)
     assert b'User removed' in rv.data
     assert b'<td>random</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
 
@@ -253,6 +253,24 @@ def test_edit_user(client):
     rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3), follow_redirects=True)
     assert b'User updated' in rv.data
     assert b'<td>newname</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
+
+### download database
+def test_download_database(client):
+    """Test the xml download from the database
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/export_xml', follow_redirects=True)
+    assert b'You can download the xml' in rv.data
+    rv=client.get('download_xml')
+    assert b'<actions>' in rv.data
+    assert b'<roles>' in rv.data
+    assert b'<chores>' in rv.data
+    assert b'<persons>' in rv.data
+    assert b'dishes' in rv.data
+    assert b'random' in rv.data
+    assert b'admin' in rv.data
+    assert b'2015-08-01' in rv.data
 
 if __name__=='__main__':
     pytest.main(['-vv'])

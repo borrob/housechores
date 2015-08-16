@@ -268,7 +268,12 @@ def export_xml():
             f.write(row[0] + '\n')
     logging.debug('Fetching the database as xml output.')
     flash(Markup('You can download the xml <a download href="' + url_for('download_xml') + '" target="_blank">file here</a>.'), 'info')
-    return redirect(request.referrer)
+    if request.referrer:
+        #refresh the referring page
+        return redirect(request.referrer)
+    else:
+        #if not possible: return to index
+        return redirect (url_for('index'))
 
 @app.route('/download_xml')
 def download_xml():
