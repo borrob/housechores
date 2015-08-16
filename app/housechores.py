@@ -4,7 +4,7 @@ import os
 import sqlite3
 import logging
 from datetime import datetime, date
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
+from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, Markup, make_response
 from flask_debugtoolbar import DebugToolbarExtension
 
 #create app
@@ -147,6 +147,7 @@ def before_request():
         path=None
         extension=None
     if 'uid' in session:
+        g.current_user=session['uid']
         pass
     elif (request.endpoint=='login' or request.endpoint=='loginscreen'):
         pass
@@ -252,6 +253,33 @@ def logout():
     g.current_user=None
     flash('You were logged out','info')
     return redirect(url_for('loginscreen'))
+
+@app.route('/export_xml')
+def export_xml():
+    """Export the database as XML
+    TODO: check database and schemas
+    """
+    db=get_db()
+    cur=db.execute('select * from xml_output')
+    rows=cur.fetchall()
+    writefile='export/xml_database_' + str(g.current_user) + '.xml'
+    with open(writefile,'w') as f:
+        for row in rows:
+            f.write(row[0] + '\n')
+    logging.debug('Fetching the database as xml output.')
+    flash(Markup('You can download the xml <a download href="' + url_for('download_xml') + '" target="_blank">file here</a>.'), 'info')
+    return redirect(request.referrer)
+
+@app.route('/download_xml')
+def download_xml():
+    """Download the generated xml
+    """
+    writefile='export/xml_database_' + str(g.current_user) + '.xml'
+    with open(writefile,'r') as f:
+        down=f.read()
+    response=make_response(down)
+    response.headers["Content-Disposition"] = '"attachment; filename=' + writefile + '"'
+    return response
 
 #PAGES
 @app.route('/overview')
