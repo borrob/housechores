@@ -45,7 +45,7 @@ def test_Root(client):
     """
     login(client)
     rv=client.get('/')
-    assert b'Hello there!' in rv.data
+    assert b'Welcome to the house chores' in rv.data
 
 def test_empty_overviewpage(client):
     """Test: with an empty database, the overview page is blank
@@ -146,11 +146,11 @@ def test_login_required(client):
     """
     rv=client.get('/', follow_redirects=True)
     assert b'Login first!' in rv.data
-    assert b'Hello there' not in rv.data
+    assert b'Welcome to the house chores' not in rv.data
     login(client)
     rv=client.get('/', follow_redirects=True)
     assert b'Login first!' not in rv.data
-    assert b'Hello there' in rv.data
+    assert b'Welcome to the house chores' in rv.data
 
 def test_nologin_for_static(client):
     """Javascript and css should be available without login
@@ -174,39 +174,39 @@ def test_login1(client):
     """Test correct and wrong username and passwords
     """
     rv=login(client)
-    assert b'Hello there' in rv.data
+    assert b'Welcome to the house chores' in rv.data
     assert b'Wrong username / password combination' not in rv.data
 
 def test_login2(client):
     """Test correct and wrong username and passwords
     """
     rv=login(client, user='wronguser')
-    assert b'Hello there' not in rv.data
+    assert b'Welcome to the house chores' not in rv.data
     assert b'Wrong username / password combination' in rv.data
 
 def test_login3(client):
     """Test correct and wrong username and passwords
     """
     rv=login(client, password='wrongpassword')
-    assert b'Hello there' not in rv.data
+    assert b'Welcome to the house chores' not in rv.data
     assert b'Wrong username / password combination' in rv.data
 
 def test_login4(client):
     """Test correct and wrong username and passwords
     """
     rv=login(client, user='wronguser', password='wrongpassword')
-    assert b'Hello there' not in rv.data
+    assert b'Welcome to the house chores' not in rv.data
     assert b'Wrong username / password combination' in rv.data
 
 def test_logout(client):
     """After logout no page should be available anymore
     """
     rv=login(client)
-    assert b'Hello there' in rv.data
+    assert b'Welcome to the house chores' in rv.data
     rv=client.get('/logout', follow_redirects=True)
     assert b'You were logged out' in rv.data
     rv=client.get('/', follow_redirects=True)
-    assert b'Hello there' not in rv.data
+    assert b'Welcome to the house chores' not in rv.data
     assert b'Login first' in rv.data
 
 ### user admin
