@@ -386,7 +386,6 @@ def copy_to_today(id):
 def new_from_chore(id):
     """Inser new action for today of chore with id=<id>
     """
-    g.current_user=1 #TODO: real current_user
     today=str(date.today().strftime('%Y-%m-%d'))
     db=get_db()
     db.execute('insert into actions (action_date, person_id, chore_id) values(?,?,?)', [today, g.current_user, id])
