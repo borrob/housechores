@@ -483,7 +483,11 @@ def edit_user():
     TODO: add try/catch
     """
     db=get_db()
-    db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
+    if len(request.form['pass'])>3:
+        # checking if password is filled in
+        db.execute('update persons set name = ?, password= ? , role_id= ? where id = ?',[request.form['person'], request.form['pass'], request.form['role'], request.form['id']])
+    else:
+        db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
     db.commit()
     flash('User updated', 'success')
     logging.info('Edited user with id=%s' %(request.form['id']))
