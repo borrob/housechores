@@ -209,6 +209,24 @@ def test_logout(client):
     assert b'Welcome to the house chores' not in rv.data
     assert b'Login first' in rv.data
 
+def test_login_changepass(client):
+    """Test correct username and change it
+    """
+    rv=login(client)
+    assert b'Welcome to the house chores' in rv.data
+    assert b'Wrong username / password combination' not in rv.data
+    rv=client.post('/edit_user', data=dict(person='newname', role=1, id=1, passw='12345678'), follow_redirects=True)
+    rv=client.get('/logout', follow_redirects=True)
+    rv=login(client)
+    assert b'Welcome to the house chores' not in rv.data
+    assert b'Wrong username / password combination' in rv.data
+    rv=login(client, user='newname')
+    assert b'Welcome to the house chores' not in rv.data
+    assert b'Wrong username / password combination' in rv.data
+    rv=login(client, user='newname', password='12345678')
+    assert b'Welcome to the house chores' in rv.data
+    assert b'Wrong username / password combination' not in rv.data
+
 ### user admin
 def test_useradmin(client):
     """Test the user admin page
@@ -250,7 +268,8 @@ def test_edit_user(client):
     assert b'<td>newname</td>' not in rv.data
     assert b'<td>newname</td><td>admin</td>' not in rv.data.replace('\n','').replace('\t','')
     #edit user
-    rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3), follow_redirects=True)
+    rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3, passw=''), follow_redirects=True)
+    print rv.data
     assert b'User updated' in rv.data
     assert b'<td>newname</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
 
