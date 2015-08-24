@@ -452,9 +452,10 @@ def new_user():
     TODO: add try/catch
     """
     db=get_db()
-    db.execute('insert into persons (name, role_id) values (?,?)',[request.form['name'], request.form['roles']])
+    db.execute('insert into persons (name, password, role_id) values (?,?,?)',[request.form['name'], 'resu', request.form['roles']])
     db.commit()
-    flash('New user added', 'success')
+    flash('New user added, password: resu', 'success')
+    flash('Please change the password','danger')
     logging.info('New user added: %s' %(request.form['name']))
     return redirect(url_for('user_admin'))
 

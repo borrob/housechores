@@ -247,6 +247,11 @@ def test_add_user(client):
     rv=client.post('/new_user', data=dict(name='dude', roles=2), follow_redirects=True)
     assert b'New user added' in rv.data
     assert b'<td>dude</td><td>user</td>' in rv.data.replace('\n','').replace('\t','')
+    rv=client.get('/logout', follow_redirects=True)
+    rv=login(client, user='dude', password='resu')
+    assert b'Welcome to the house chores' in rv.data
+    assert b'Wrong username / password combination' not in rv.data
+
 
 def test_remove_user(client):
     """Test removing a user
