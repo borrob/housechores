@@ -395,7 +395,7 @@ def new_from_chore(id):
     return redirect( url_for('chores_lastaction'))
 
 @app.route('/delete_chore/<id>')
-def delete_chore(id):
+def delete_chore(id=0):
     """Delete chore with id=id
 
     TODO: only for admin
