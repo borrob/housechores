@@ -10,20 +10,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 #create app
 app = Flask(__name__)
 
-# Load default config and override config from an environment variable
-app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, 'chores.db'),
-    DEBUG=True,
-    DEBUG_TB_INTERCEPT_REDIRECTS=False,
-    SECRET_KEY='thisisareallysecretkeydon7you71nk',
-    USERNAME='admin',
-    PASSWORD='admin',
-    LOGFILE = 'log.log',
-    LOGFILEMODE = 'w',
-    LOGFORMAT = '%(asctime)s - %(funcName)s from %(filename)s, line: %(lineno)s - %(levelname)s: %(message)s',
-    LOGLEVEL = 'DEBUG'
-))
-
+app.config.from_object('config')
 app.config.from_envvar('HOUSECHORESETTINGS', silent=True)
 app.debug=app.config['DEBUG']
 toolbar=DebugToolbarExtension(app)

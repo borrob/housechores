@@ -1,0 +1,10 @@
+DATABASE='housechores/chores.db'
+DEBUG=False
+DEBUG_TB_INTERCEPT_REDIRECTS=False
+SECRET_KEY='thisisareallysecretkeydon7you71nk'
+USERNAME='admin'
+PASSWORD='admin'
+LOGFILE = 'housechores/log.log'
+LOGFILEMODE = 'w'
+LOGFORMAT = '%(asctime)s - %(funcName)s from %(filename)s line: %(lineno)s - %(levelname)s: %(message)s'
+LOGLEVEL = 'DEBUG'

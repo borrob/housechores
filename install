@@ -1,0 +1,62 @@
+#! /bin/bash
+
+if [ $1 = '-h' ] || [ $1 = '--help' ]
+then
+	echo 'installing housechores to /var/www/housechores'
+	echo ''
+	echo '-a (--apache): restart apache'
+	echo '-f (--firstrun): setup config and database'
+	echo '-s (--sample): load sample data into the database'
+	echo '-h (--help): this text'
+	echo ''
+	echo 'If used, -a should be the last option, -f should be before -s.'
+	echo ''
+	exit
+fi
+
+rsync -rvuh --exclude 'app/config.py' --exclude 'conf' --exclude 'log.log' --exclude 'install.sh' --exclude '*.db' --exclude '*.pyc' --exclude 'test_*.py' ./* /var/www/housechores
+rm -f /var/www/housechores/*/*.pyc
+
+chmod -R 770 /var/www/housechores/*
+chgrp -R www-data /var/www/housechores/*
+
+while [ "$1" != "" ]; do
+	case $1 in
+		-a | --apache )
+			echo 'Restarting apache'
+			service apache2 restart
+			;;
+		-f | --firstrun )
+			echo 'Firstrun:'
+			echo 'Copying config'
+			cp conf/config.py /var/www/housechores/config.py
+			echo 'Creating database'
+			touch /var/www/housechores/chores.db
+			chmod 770 /var/www/housechores/chores.db
+			chgrp www-data /var/www/housechores/chores.db
+			echo 'Setting up database'
+			sqlite3 /var/www/housechores/chores.db < /var/www/housechores/sql/create_tables.sql
+			;;
+		-s | --sample )
+			echo 'Loading sample data'
+			sqlite3 /var/www/housechores/chores.db < /var/www/housechores/sql/insert_sampledata.sql
+			;;
+		-h | --help )
+			echo 'installing housechores to /var/www/housechores'
+			echo ''
+			echo '-a (--apache): restart apache'
+			echo '-f (--firstrun): setup config and database'
+			echo '-s (--sample): load sample data into the database'
+			echo '-h (--help): this text'
+			echo ''
+			echo 'If used, -a should be the last option, -f should be before -s.'
+			echo ''
+			exit
+			;;
+
+		* )
+			exit 1
+	esac
+	shift
+done
+
