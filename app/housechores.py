@@ -199,18 +199,17 @@ def loginscreen():
     init the database and create a stand admin account. This should only happen
     on first use.
     """
-    try:
-        f=app.open_resource(app.config['DATABASE'])
-        f.close()
-        return render_template('login.html')
-    except IOError:
+    if not(os.path.isfile(app.config['DATABASE'])):
         # database doesn't exist yet --> create it
+        open(app.config['DATABASE'], 'a').close()
         init_the_db()
         g.current_user=1
         session['uid']=1
         flash('Created default account: user=admin, pass=admin','warning')
         logging.warning('Created a default admin account')
         return redirect(url_for('index'))
+    else:
+        return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
 def login():
