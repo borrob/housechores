@@ -389,6 +389,8 @@ def delete_chore(id=0):
     db=get_db()
     db.execute('delete from chores where id = ?',[id])
     db.commit()
+    db.execute('delete from actions where chore_id = ?',[id])
+    db.commit()
     flash('Chore removed', 'info')
     logging.info('Removed chore with id=%s' %id)
     return redirect( url_for('chores_lastaction'))
