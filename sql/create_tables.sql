@@ -111,7 +111,7 @@ create view xml_roles as
 	union all
 	select
 		'    <id>' || id || '</id>' ||
-		'\n    <name>' || name || '</name>'
+		'    <name>' || name || '</name>'
 	from
 		roles
 	union all
@@ -123,7 +123,7 @@ create view xml_chores as
 	union all
 	select
 		'    <id>' || id || '</id>' ||
-		'\n    <name>' || name || '</name>'
+		'    <name>' || name || '</name>'
 	from
 		chores
 	union all
@@ -135,9 +135,9 @@ create view xml_persons as
 	union all
 	select
 		'    <id>' || id || '</id>' ||
-		'\n    <name>' || name || '</name>' ||
-		'\n    <password>' || password || '</password>' ||
-		'\n    <role_id' || role_id || '</role_id>'
+		'    <name>' || name || '</name>' ||
+		'    <password>' || password || '</password>' ||
+		'    <role_id' || role_id || '</role_id>'
 	from
 		persons
 	union all
@@ -149,9 +149,9 @@ create view xml_actions as
 	union all
 	select
 		'    <id>' || id || '</id>' ||
-		'\n    <action_date>' || action_date || '</action_date>' ||
-		'\n    <person_id>' || person_id || '</person_id>' ||
-		'\n    <chore_id>' || chore_id || '</chore_id>'
+		'    <action_date>' || action_date || '</action_date>' ||
+		'    <person_id>' || person_id || '</person_id>' ||
+		'    <chore_id>' || chore_id || '</chore_id>'
 	from
 		actions
 	union all
