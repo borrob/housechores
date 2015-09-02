@@ -248,7 +248,7 @@ def export_xml():
     db=get_db()
     cur=db.execute('select * from xml_output')
     rows=cur.fetchall()
-    writefile='export/xml_database_' + str(g.current_user) + '.xml'
+    writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
     with open(writefile,'w') as f:
         for row in rows:
             f.write(row[0] + '\n')
@@ -265,7 +265,7 @@ def export_xml():
 def download_xml():
     """Download the generated xml
     """
-    writefile='export/xml_database_' + str(g.current_user) + '.xml'
+    writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
     with open(writefile,'r') as f:
         down=f.read()
     response=make_response(down)

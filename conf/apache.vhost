@@ -13,13 +13,13 @@
 		allow from all
 	</Directory>
 
-	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
-	<Directory "/usr/lib/cgi-bin">
-		AllowOverride None
-		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
-		Order allow,deny
-		Allow from all
-	</Directory>
+	#ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+	#<Directory "/usr/lib/cgi-bin">
+	#	AllowOverride None
+	#	Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+	#	Order allow,deny
+	#	Allow from all
+	#</Directory>
 
 	ErrorLog ${APACHE_LOG_DIR}/error.log
 
@@ -29,12 +29,9 @@
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 
-	WSGIDaemonProcess housechores 
 	WSGIScriptAlias /housechores /var/www/housechores/housechores.wsgi
 
 	<Directory /var/www/housechores>
-		WSGIProcessGroup housechores
-		WSGIApplicationGroup %{GLOBAL}
 		Order deny,allow
 		Allow from all
 	</Directory>
