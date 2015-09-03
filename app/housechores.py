@@ -87,6 +87,7 @@ def get_userid(name):
     db=get_db()
     cursor = db.execute('select id from persons where name=?',[name])
     row=cursor.fetchone()
+    logging.debug('Getting the userid for user: ' + name)
     return row[0]
 
 def get_choreid(chore):
@@ -95,6 +96,7 @@ def get_choreid(chore):
     TODO: check if database and schema exist
     """
     db=get_db()
+    logging.debug('getting the chore_id for a specific chore: ' + chore)
     cursor = db.execute('select id from chores where name=?',[chore])
     row=cursor.fetchone()
     return row[0]
@@ -103,6 +105,7 @@ def check_login(user, password):
     """Check the provided username and password
     """
     db=get_db()
+    logging.debug('Checking user and password: ' + user + ', ' + password)
     cur=db.execute('select id from persons where name=? and password=?',[user.lower(), password])
     row=cur.fetchone()
     if row:
@@ -119,6 +122,7 @@ def close_db(error):
     """Closes the database again at the end of the request.
     """
     if hasattr(g, 'db'):
+        logging.debug('closing the database')
         g.db.close()
 
 @app.before_request
@@ -172,6 +176,7 @@ def initdb():
 
     TODO: only when admin
     """
+    logging.info('requesting to initialise the database')
     init_the_db()
     flash('Created new database','warning')
     return redirect(url_for('index'))
@@ -234,7 +239,7 @@ def logout():
     """Log out
     """
     #TODO write before_request and then we can use the g.current_user
-    #logging.info('User %s trying to log out' %(g.current_user))
+    logging.info('User %s trying to log out' %(g.current_user))
     session.pop('uid')
     g.current_user=None
     flash('You were logged out','info')
@@ -277,6 +282,7 @@ def download_xml():
 def overview():
     """Generate a simple overview of all the actions
     """
+    logging.debug('Generating the overview page')
     db=get_db()
     cursor=db.execute('select * from overview order by action_date desc, chore asc')
     rows=cursor.fetchall()
@@ -289,6 +295,7 @@ def chores_lastaction():
     """Generate a simple overview of all the chores with their last actioned
     date.
     """
+    logging.debug('Generating the chores_lastaction page')
     db=get_db()
     cursor=db.execute('select * from chores_lastaction')
     rows=cursor.fetchall()
@@ -298,6 +305,7 @@ def chores_lastaction():
 def user_admin():
     """Render the user and role admin page
     """
+    logging.debug('Generating the user admin page')
     users=get_users_role();
     roles=get_roles()
     return render_template('user_admin.html', users=users, roles=roles)
@@ -486,4 +494,5 @@ def edit_user():
 # RUN
 #
 if __name__=='__main__':
+    logging.critical('FIRING UP THE FLASK APPLICATION')
     app.run(host='0.0.0.0')
