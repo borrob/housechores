@@ -78,11 +78,44 @@ def test_remove_action(client):
     assert b'Action removed' in rv.data #check if message for 'delete successful' is returned
     assert b'<td>change bedsheets</td>' not in rv.data #check if items really is deleted
 
+def test_remove_action_non_admin(client):
+    """Test deleting an action as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    #test if 'change bedsheets' is present to start with
+    rv=client.get('/overview')
+    assert b'<td>change bedsheets</td>' in rv.data
+    #remove bedsheets
+    rv=client.get('/delete_action/5', follow_redirects=True)
+    assert b'Action removed' in rv.data #check if message for 'delete successful' is returned
+    assert b'<td>change bedsheets</td>' not in rv.data #check if items really is deleted
+
 def test_add_action(client):
     """Test adding a new action
     """
     login(client)
     sample_db(client)
+    #test null-hypothesis
+    rv=client.get('/overview')
+    assert b'<td>groceries lidl</td>' not in rv.data
+    #add new action
+    rv=client.post('/new_action', data=dict(date='20-10-2015', person=1, chore=4),follow_redirects=True)
+    #test flash message and check item is added
+    assert b'New action added' in rv.data
+    assert b'<td>groceries lidl</td>' in rv.data
+
+def test_add_action_non_admin(client):
+    """Test adding a new action as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
     #test null-hypothesis
     rv=client.get('/overview')
     assert b'<td>groceries lidl</td>' not in rv.data
@@ -108,6 +141,25 @@ def test_edit_action(client):
     assert b'<td>groceries lidl</td>' in rv.data
     assert b'<td>random</td>' in rv.data
 
+def test_edit_action_non_admin(client):
+    """Test edit action as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.get('/overview')
+    assert b'<td>1980-01-01</td>' not in rv.data
+    assert b'<td>groceries lidl</td>' not in rv.data
+    assert b'<td>random</td>' not in rv.data
+    #edit action
+    rv=client.post('/edit_action', data=dict(id=1,chore='groceries lidl',person='random', date='1980-01-01'), follow_redirects=True)
+    assert b'Updated action' in rv.data
+    assert b'<td>1980-01-01</td>' in rv.data
+    assert b'<td>groceries lidl</td>' in rv.data
+    assert b'<td>random</td>' in rv.data
+
 ### Chores test
 def test_remove_chore(client):
     """Test to remove an existing chore
@@ -120,6 +172,20 @@ def test_remove_chore(client):
     assert b'Chore removed' in rv.data
     assert b'<td>dishes</td>' not in rv.data
 
+def test_remove_chore_non_admin(client):
+    """Test to remove an existing chore as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.get('/chores_lastaction')
+    assert b'<td>dishes</td>' in rv.data
+    rv=client.get('/delete_chore/1', follow_redirects=True)
+    assert b'Chore removed' not in rv.data
+    assert b'<td>dishes</td>' in rv.data
+
 def test_add_chore(client):
     """Test adding a chore
     """
@@ -127,6 +193,18 @@ def test_add_chore(client):
     rv=client.post('/new_chore', data=dict(chore='thisisanewchore'),follow_redirects=True)
     assert b'New chore added' in rv.data #test the flash message
     assert b'<td>thisisanewchore</td>' in rv.data #test the actual insert
+
+def test_add_chore_non_admin(client):
+    """Test adding a chore as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.post('/new_chore', data=dict(chore='thisisanewchore'),follow_redirects=True)
+    assert b'New chore added' not in rv.data #test the flash message
+    assert b'<td>thisisanewchore</td>' not in rv.data #test the actual insert
 
 def test_edit_chore(client):
     """Test edit chore
@@ -139,6 +217,21 @@ def test_edit_chore(client):
     rv=client.post('/edit_chore', data=dict(id=5,chore='close curtains'), follow_redirects=True)
     assert b'Chore updated' in rv.data
     assert b'<td>close curtains</td>' in rv.data
+
+def test_edit_chore_non_admin(client):
+    """Test edit chore as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.get('/chores_lastaction')
+    assert b'<td>close curtains</td>' not in rv.data
+    #edit action
+    rv=client.post('/edit_chore', data=dict(id=5,chore='close curtains'), follow_redirects=True)
+    assert b'Chore updated' not in rv.data
+    assert b'<td>close curtains</td>' not in rv.data
 
 ### login
 def test_login_required(client):
@@ -209,6 +302,16 @@ def test_logout(client):
     assert b'Welcome to the house chores' not in rv.data
     assert b'Login first' in rv.data
 
+def test_inlog_non_admin(client):
+    """Test if the application is running (also as non admin)
+    """
+    login(client)
+    sample_db(client)
+    client.get('/logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.get('/')
+    assert b'Welcome to the house chores' in rv.data
+
 def test_login_changepass(client):
     """Test correct username and change it
     """
@@ -238,6 +341,19 @@ def test_useradmin(client):
     assert b'<td>admin</td>' in rv.data
     assert b'<td>rob</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
 
+def test_useradmin_non_admin(client):
+    """Test the user admin page as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>rob</td>' not in rv.data
+    assert b'<td>admin</td>' not in rv.data
+    assert b'<td>rob</td><td>admin</td>' not in rv.data.replace('\n','').replace('\t','')
+
 def test_add_user(client):
     """Test adding a new user
     """
@@ -252,6 +368,23 @@ def test_add_user(client):
     assert b'Welcome to the house chores' in rv.data
     assert b'Wrong username / password combination' not in rv.data
 
+def test_add_user_non_admin(client):
+    """Test adding a new user as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>dude</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
+    rv=client.post('/new_user', data=dict(name='dude', roles=2), follow_redirects=True)
+    assert b'New user added' not in rv.data
+    assert b'<td>dude</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
+    rv=client.get('/logout', follow_redirects=True)
+    rv=login(client, user='dude', password='resu')
+    assert b'Welcome to the house chores' not in rv.data
+    assert b'Wrong username / password combination' in rv.data
 
 def test_remove_user(client):
     """Test removing a user
@@ -264,6 +397,17 @@ def test_remove_user(client):
     assert b'User removed' in rv.data
     assert b'<td>random</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
 
+def test_remove_user_non_admin(client):
+    """Test removing a user as normal user
+    """
+    login(client)
+    sample_db(client)
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    rv=client.get('/delete_user/4', follow_redirects=True)
+    assert b'User removed' not in rv.data
+
 def test_edit_user(client):
     """Test user chore
     """
@@ -274,9 +418,23 @@ def test_edit_user(client):
     assert b'<td>newname</td><td>admin</td>' not in rv.data.replace('\n','').replace('\t','')
     #edit user
     rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3, passw=''), follow_redirects=True)
-    print rv.data
     assert b'User updated' in rv.data
     assert b'<td>newname</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
+
+def test_edit_user_non_admin(client):
+    """Test user chore as normal user
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>newname</td>' not in rv.data
+    assert b'<td>newname</td><td>admin</td>' not in rv.data.replace('\n','').replace('\t','')
+    #change user
+    client.get('logout', follow_redirects=True)
+    login(client, user='random', password='asd')
+    #edit user
+    rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3, passw=''), follow_redirects=True)
+    assert b'User updated' not in rv.data
 
 ### download database
 def test_download_database(client):
