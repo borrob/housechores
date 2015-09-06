@@ -9,7 +9,7 @@
 			<th data-toggle="tooltop" data-placement="bottom" title="Number of days since this chore was last performed.">#Days</th>
 			<th></th>
 		</tr>
-		{% if admin %}
+		{% if is_admin %}
 		<tr class="info">
 			<form action="{{ url_for('new_chore')}}" method="POST">
 				<td></td>
@@ -31,7 +31,7 @@
 				<td>{{ row.last_actioned }}</td>
 				<td>{{ row.last_actioned | dayssince }}
 				<td>
-					{% if admin %}
+					{% if is_admin %}
 						<a href='#' onclick="deletechore({{ row.chore_id }})">
 							<span class="glyphicon glyphicon-trash" aria-hidden="true" data-toggle="tooltop" data-placement="bottom" title="delete this chore"></span></a>
 						<a href="#" onclick="edit( {{ row.chore_id }}, '{{ row.chore }}')">
@@ -44,7 +44,7 @@
 		{% endfor %}
 	</table>
 
-	{% if admin %}
+	{% if is_admin %}
 	<!-- editModal -->
 	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 		<div class="modal-dialog" role="document">
@@ -98,7 +98,7 @@
 		</div>
 	</div>
 	{% endif %}
-	{% if admin %}
+	{% if is_admin %}
 	<script>
 	function edit(id, chore){
 		$('#editModalID').val(id);
