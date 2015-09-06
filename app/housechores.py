@@ -181,27 +181,26 @@ def index():
 @app.route('/initdb')
 def initdb():
     """Initialize the database
-
-    TODO: only when admin
     """
     logging.info('requesting to initialise the database')
-    init_the_db()
-    flash('Created new database','warning')
+    if check_admin(g.current_user):
+        init_the_db()
+        flash('Created new database','warning')
     return redirect(url_for('index'))
 
 @app.route('/filldbsampledata')
 def fill_db_sample_data():
     """fill the database with sample data
 
-    TODO: only when admin
     TODO: check if database exists and tables ares present
     """
     db=get_db()
-    with app.open_resource('../sql/insert_sampledata.sql','r') as f:
-        logging.warning('inserting sample data in database')
-        db.cursor().executescript(f.read())
-    db.commit()
-    flash('Filled database with sample data','warning')
+    if check_admin(g.current_user):
+        with app.open_resource('../sql/insert_sampledata.sql','r') as f:
+            logging.warning('inserting sample data in database')
+            db.cursor().executescript(f.read())
+        db.commit()
+        flash('Filled database with sample data','warning')
     return redirect(url_for('index'))
 
 @app.route('/loginscreen')
@@ -258,15 +257,16 @@ def export_xml():
     """Export the database as XML
     TODO: check database and schemas
     """
-    db=get_db()
-    cur=db.execute('select * from xml_output')
-    rows=cur.fetchall()
-    writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
-    with open(writefile,'w') as f:
-        for row in rows:
-            f.write(row[0] + '\n')
-    logging.debug('Fetching the database as xml output.')
-    flash(Markup('You can download the xml <a download href="' + url_for('download_xml') + '" target="_blank">file here</a>.'), 'info')
+    if check_admin(g.current_user):
+        db=get_db()
+        cur=db.execute('select * from xml_output')
+        rows=cur.fetchall()
+        writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
+        with open(writefile,'w') as f:
+            for row in rows:
+                f.write(row[0] + '\n')
+        logging.debug('Fetching the database as xml output.')
+        flash(Markup('You can download the xml <a download href="' + url_for('download_xml') + '" target="_blank">file here</a>.'), 'info')
     if request.referrer:
         #refresh the referring page
         return redirect(request.referrer)
@@ -278,12 +278,15 @@ def export_xml():
 def download_xml():
     """Download the generated xml
     """
-    writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
-    with open(writefile,'r') as f:
-        down=f.read()
-    response=make_response(down)
-    response.headers["Content-Disposition"] = '"attachment; filename=' + writefile + '"'
-    return response
+    if check_admin(g.current_user):
+        writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
+        with open(writefile,'r') as f:
+            down=f.read()
+        response=make_response(down)
+        response.headers["Content-Disposition"] = '"attachment; filename=' + writefile + '"'
+        return response
+    else:
+        return redirect (url_for('index'))
 
 #PAGES
 @app.route('/overview')
@@ -314,9 +317,12 @@ def user_admin():
     """Render the user and role admin page
     """
     logging.debug('Generating the user admin page')
-    users=get_users_role();
-    roles=get_roles()
-    return render_template('user_admin.html', users=users, roles=roles,admin=check_admin(g.current_user))
+    if check_admin(g.current_user):
+        users=get_users_role();
+        roles=get_roles()
+        return render_template('user_admin.html', users=users, roles=roles,admin=check_admin(g.current_user))
+    else:
+        return redirect (url_for('index'))
 
 #ACTIONS
 @app.route('/new_action', methods=['POST'])
@@ -399,32 +405,31 @@ def new_from_chore(id):
 @app.route('/delete_chore/<id>')
 def delete_chore(id=0):
     """Delete chore with id=id
-
-    TODO: only for admin
     """
-    db=get_db()
-    db.execute('delete from chores where id = ?',[id])
-    db.commit()
-    db.execute('delete from actions where chore_id = ?',[id])
-    db.commit()
-    flash('Chore removed', 'info')
-    logging.info('Removed chore with id=%s' %id)
+    if check_admin(g.current_user):
+        db=get_db()
+        db.execute('delete from chores where id = ?',[id])
+        db.commit()
+        db.execute('delete from actions where chore_id = ?',[id])
+        db.commit()
+        flash('Chore removed', 'info')
+        logging.info('Removed chore with id=%s' %id)
     return redirect( url_for('chores_lastaction'))
 
 @app.route('/new_chore', methods=['POST'])
 def new_chore():
     """Get the URL request with data for a new chore
-    TODO: check loging
     TODO: check if database and schemas exist
     TODO: check SQL-injection
     TODO: validate dataentry
     TODO: add try/catch
     """
-    db=get_db()
-    db.execute('insert into chores (name) values (?)',[request.form['chore']])
-    db.commit()
-    flash('New chore added', 'success')
-    logging.info('New chore added: %s' %(request.form['chore']))
+    if check_admin(g.current_user):
+        db=get_db()
+        db.execute('insert into chores (name) values (?)',[request.form['chore']])
+        db.commit()
+        flash('New chore added', 'success')
+        logging.info('New chore added: %s' %(request.form['chore']))
     return redirect(url_for('chores_lastaction'))
 
 @app.route('/edit_chore',methods=['POST'])
@@ -432,49 +437,52 @@ def edit_chore():
     """Edit a chore
 
     The POST data should contain the chore_id and the new chore description
-    TODO: check login
     TODO: check if database and schemas exist
     TODO: check SQL injection
     TODO: validate dataentry
     TODO: add try/catch
     """
-    db=get_db()
-    db.execute('update chores set name = ? where id = ?',[request.form['chore'], request.form['id']])
-    db.commit()
-    flash('Chore updated', 'success')
-    logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
+    if check_admin(g.current_user):
+        db=get_db()
+        db.execute('update chores set name = ? where id = ?',[request.form['chore'], request.form['id']])
+        db.commit()
+        flash('Chore updated', 'success')
+        logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
     return redirect(url_for('chores_lastaction'))
 
 #USERS
 @app.route('/new_user', methods=['POST'])
 def new_user():
     """Get the URL request with data for a new user
-    TODO: check loging
     TODO: check if database and schemas exist
     TODO: check SQL-injection
     TODO: validate dataentry
     TODO: add try/catch
     """
-    db=get_db()
-    db.execute('insert into persons (name, password, role_id) values (?,?,?)',[request.form['name'], 'resu', request.form['roles']])
-    db.commit()
-    flash('New user added, password: resu', 'success')
-    flash('Please change the password','danger')
-    logging.info('New user added: %s' %(request.form['name']))
-    return redirect(url_for('user_admin'))
+    if check_admin(g.current_user):
+        db=get_db()
+        db.execute('insert into persons (name, password, role_id) values (?,?,?)',[request.form['name'], 'resu', request.form['roles']])
+        db.commit()
+        flash('New user added, password: resu', 'success')
+        flash('Please change the password','danger')
+        logging.info('New user added: %s' %(request.form['name']))
+        return redirect(url_for('user_admin'))
+    else:
+        return redirect(url_for('index'))
 
 @app.route('/delete_user/<id>')
 def delete_user(id):
     """Delete user with id=id
-
-    TODO: only for admin
     """
-    db=get_db()
-    db.execute('delete from persons where id = ?',[id])
-    db.commit()
-    flash('User removed', 'info')
-    logging.info('Removed user with id=%s' %id)
-    return redirect( url_for('user_admin'))
+    if check_admin(g.current_user):
+        db=get_db()
+        db.execute('delete from persons where id = ?',[id])
+        db.commit()
+        flash('User removed', 'info')
+        logging.info('Removed user with id=%s' %id)
+        return redirect( url_for('user_admin'))
+    else:
+        return redirect(url_for('index'))
 
 @app.route('/edit_user', methods=['POST'])
 def edit_user():
@@ -487,16 +495,19 @@ def edit_user():
     TODO: validate dataentry
     TODO: add try/catch
     """
-    db=get_db()
-    if request.form['passw'] and len(request.form['passw'])>3:
-        # checking if password is filled in
-        db.execute('update persons set name = ?, password= ? , role_id= ? where id = ?',[request.form['person'], request.form['passw'], request.form['role'], request.form['id']])
+    if check_admin(g.current_user):
+        db=get_db()
+        if request.form['passw'] and len(request.form['passw'])>3:
+            # checking if password is filled in
+            db.execute('update persons set name = ?, password= ? , role_id= ? where id = ?',[request.form['person'], request.form['passw'], request.form['role'], request.form['id']])
+        else:
+            db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
+        db.commit()
+        flash('User updated', 'success')
+        logging.info('Edited user with id=%s' %(request.form['id']))
+        return redirect(url_for('user_admin'))
     else:
-        db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
-    db.commit()
-    flash('User updated', 'success')
-    logging.info('Edited user with id=%s' %(request.form['id']))
-    return redirect(url_for('user_admin'))
+        return redirect(url_for('index'))
 
 ################################################################################
 # RUN
