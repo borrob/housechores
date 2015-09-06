@@ -119,7 +119,7 @@ def check_admin(userid):
     db=get_db()
     cur=db.execute('select role_name from users where person_id=?', [userid])
     row=cur.fetchone()
-    logging.debug('Role of curent user: ' + row[0])
+    logging.debug('Role of current user: ' + row[0])
     return row[0]=='admin'
 
 ################################################################################
