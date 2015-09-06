@@ -15,14 +15,14 @@
 				</td>
 				<td>
 					<select name="person" data-toggle="tooltop" data-placement="bottom" title="who did the chore">
-						<option value=-1>none</option>
+						<option/>
 						{% for user in users %}
 							<option value='{{user.id}}'>{{user.name}}</option>
 						{% endfor %}
 					</select>
 				<td>
 					<select name="chore" data-toggle="tooltop" data-placement="bottom" title="what chore">
-						<option value=-1>none</option>
+						<option/>
 						{% for chore in chores %}
 							<option value='{{chore.id}}'>{{chore.name}}</option>
 						{% endfor %}
@@ -70,7 +70,7 @@
 						<label for='editModalChore' class='col-sm-2 control-label'>Chore</label>
 						<div class="col-sm-10">
 							<select name="chore" class="form-control" id="editModalChore">
-								<option>none</option>
+								<option/>
 								{% for chore in chores %}
 									<option>{{chore.name}}</option>
 								{% endfor %}
@@ -81,7 +81,7 @@
 						<label for='editModalName' class='col-sm-2 control-label'>Name</label>
 						<div class="col-sm-10">
 							<select name="person" class="form-control" id="editModalName">
-								<option>none</option>
+								<option/>
 								{% for user in users %}
 									<option>{{user.name}}</option>
 								{% endfor %}
