@@ -113,6 +113,14 @@ def check_login(user, password):
     else:
         return None
 
+def check_admin(userid):
+    """Check if current user had admin rights.
+    """
+    db=get_db()
+    cur=db.execute('select role_name from users where person_id=?', [userid])
+    row=cur.fetchone()
+    logging.debug('Role of curent user: ' + row[0])
+    return row[0]=='admin'
 
 ################################################################################
 # APP ADMIN
@@ -168,7 +176,7 @@ app.jinja_env.filters['dayssince'] = dayssince
 @app.route('/')
 def index():
     logging.debug('returning index')
-    return render_template('index.html')
+    return render_template('index.html',admin=check_admin(g.current_user))
 
 @app.route('/initdb')
 def initdb():
@@ -288,7 +296,7 @@ def overview():
     rows=cursor.fetchall()
     rows=[dict(id=-1,action_date=None, person_name=None,chore='No chores yet')] if len(rows)==0 else rows
     today=datetime.today().strftime('%Y-%m-%d')
-    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today)
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,admin=check_admin(g.current_user))
 
 @app.route('/chores_lastaction')
 def chores_lastaction():
@@ -299,7 +307,7 @@ def chores_lastaction():
     db=get_db()
     cursor=db.execute('select * from chores_lastaction')
     rows=cursor.fetchall()
-    return render_template('chores_lastaction.html', rows=rows)
+    return render_template('chores_lastaction.html', rows=rows,admin=check_admin(g.current_user))
 
 @app.route('/user_admin')
 def user_admin():
@@ -308,7 +316,7 @@ def user_admin():
     logging.debug('Generating the user admin page')
     users=get_users_role();
     roles=get_roles()
-    return render_template('user_admin.html', users=users, roles=roles)
+    return render_template('user_admin.html', users=users, roles=roles,admin=check_admin(g.current_user))
 
 #ACTIONS
 @app.route('/new_action', methods=['POST'])
