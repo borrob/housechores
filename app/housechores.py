@@ -186,7 +186,12 @@ def initdb():
     if check_admin(g.current_user):
         init_the_db()
         flash('Created new database','warning')
-    return redirect(url_for('index'))
+    if request.referrer:
+        #refresh the referring page
+        return redirect(request.referrer)
+    else:
+        #if not possible: return to index
+        return redirect (url_for('index'))
 
 @app.route('/filldbsampledata')
 def fill_db_sample_data():
@@ -201,7 +206,12 @@ def fill_db_sample_data():
             db.cursor().executescript(f.read())
         db.commit()
         flash('Filled database with sample data','warning')
-    return redirect(url_for('index'))
+    if request.referrer:
+        #refresh the referring page
+        return redirect(request.referrer)
+    else:
+        #if not possible: return to index
+        return redirect (url_for('index'))
 
 @app.route('/loginscreen')
 def loginscreen():
@@ -286,7 +296,12 @@ def download_xml():
         response.headers["Content-Disposition"] = '"attachment; filename=' + writefile + '"'
         return response
     else:
-        return redirect (url_for('index'))
+        if request.referrer:
+            #refresh the referring page
+            return redirect(request.referrer)
+        else:
+            #if not possible: return to index
+            return redirect (url_for('index'))
 
 #PAGES
 @app.route('/overview')
