@@ -42,6 +42,10 @@
 										<input type="password" name="password" class="form-control" id="pass" data-toggle="tooltop" data-placement="bottom" title="enter password" />
 									</div>
 								</div>
+								<hr/>
+								<div class="form-group">
+									<button type="submit" id="loginbutton" class="btn btn-primary pull-right" style="width: 75px; margin-right:15px;">Login</button>
+								</div>
 							</form>
 							<!-- get flask flash messages -->
 							{% with messages = get_flashed_messages(with_categories=true) %}
@@ -51,9 +55,6 @@
 									{% endfor %}
 								{% endif %}
 							{% endwith %}
-						</div>
-						<div class="modal-footer">
-							<button type="button" id="loginbutton" class="btn btn-primary">Login</button>
 						</div>
 					</div><!-- /.modal-content -->
 				</div><!-- /.modal-dialog -->
