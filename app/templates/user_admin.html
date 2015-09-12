@@ -3,17 +3,17 @@
 	<h2>User administration</h2>
 	<table class="table table-striped">
 		<tr>
-			<th>Name</th>
-			<th>Role</th>
+			<th data-toggle="tooltop" data-placement="bottom" title="username">Name</th>
+			<th data-toggle="tooltop" data-placement="bottom" title="role of the user">Role</th>
 			<th></th>
 		</tr>
 		<tr class="info">
 			<form action="{{ url_for('new_user')}}" method="POST">
 				<td>
-					<input type="text" name='name'>
+					<input type="text" name='name' data-toggle="tooltop" data-placement="bottom" title="username">
 				</td>
 				<td>
-					<select name="roles">
+					<select name="roles" data-toggle="tooltop" data-placement="bottom" title="role">
 						{% for role in roles %}
 							<option value='{{role.id}}'>{{role.name}}</option>
 						{% endfor %}
@@ -29,7 +29,14 @@
 			<tr>
 				<td>{{ user.person_name }}</td>
 				<td>{{ user.role_name }}</td>
-				<td><a href="{{ url_for('delete_user', id=user.person_id) }}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>  <a href="#" onclick="edit( {{ user.person_id }}, '{{ user.person_name }}', '{{ user.role_id }}')"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></td>
+				<td>
+					<a href="{{ url_for('delete_user', id=user.person_id) }}">
+						<span class="glyphicon glyphicon-trash" aria-hidden="true" data-toggle="tooltop" data-placement="bottom" title="delete this user"></span>
+					</a>
+					<a href="#" onclick="edit( {{ user.person_id }}, '{{ user.person_name }}', '{{ user.role_id }}')">
+						<span class="glyphicon glyphicon-pencil" aria-hidden="true" data-toggle="tooltop" data-placement="bottom" title="edit this user"></span>
+					</a>
+				</td>
 			</tr>
 		{% endfor %}
 	</table>
@@ -43,41 +50,42 @@
 					<h4 class="modal-title" id="editModalLabel">Edit action</h4>
 				</div>
 				<div class="modal-body">
-				<form class="form-horizontal" id='editModalForm' method="POST" action='{{ url_for('edit_user') }}'>
-					<div class="form-group">
-						<label for='editModalID' class='col-sm-2 control-label'>Action id</label>
-						<div class="col-sm-2">
-							<input name='id' type=number class='form-control' id='editModalID' readonly/>
+					<form class="form-horizontal" id='editModalForm' method="POST" action='{{ url_for('edit_user') }}'>
+						<div class="form-group">
+							<label for='editModalID' class='col-sm-2 control-label'>Action id</label>
+							<div class="col-sm-2">
+								<input name='id' type=number class='form-control' id='editModalID' readonly/>
+							</div>
 						</div>
-					</div>
-					<div class="form-group">
-						<label for='editModalUser' class='col-sm-2 control-label'>Name</label>
-						<div class="col-sm-10">
-							<input name="person" type='text' class="form-control" id="editModalName"/>
+						<div class="form-group">
+							<label for='editModalUser' class='col-sm-2 control-label'>Name</label>
+							<div class="col-sm-10">
+								<input name="person" type='text' class="form-control" id="editModalName"/>
+							</div>
 						</div>
-					</div>
-					<div class="form-group">
-						<label for='editModalPass' class='col-sm-2 control-label'>Password</label>
-						<div class="col-sm-10">
-							<input name="passw" type='password' class="form-control" id="editModalPass"/>
+						<div class="form-group">
+							<label for='editModalPass' class='col-sm-2 control-label'>Password</label>
+							<div class="col-sm-10">
+								<input name="passw" type='password' class="form-control" id="editModalPass"/>
+							</div>
 						</div>
-					</div>
-					<div class="form-group">
-						<label for='editModalRole' class='col-sm-2 control-label'>Role</label>
-						<div class="col-sm-10">
-							<select name="role" class="form-control" id="editModalRole">
-								{% for role in roles %}
-									<option value={{role.id}}>{{role.name}}</option>
-								{% endfor %}
-							</select>
+						<div class="form-group">
+							<label for='editModalRole' class='col-sm-2 control-label'>Role</label>
+							<div class="col-sm-10">
+								<select name="role" class="form-control" id="editModalRole">
+									{% for role in roles %}
+										<option value={{role.id}}>{{role.name}}</option>
+									{% endfor %}
+								</select>
+							</div>
 						</div>
-					</div>
-				</form>
-
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<button id="editModalSavebutton" type="button" class="btn btn-primary">Save changes</button>
+						<div class="form-group">
+							<div class="col-sm-12">
+								<button id="editModalSavebutton" type="submit" class="btn btn-primary pull-right">Save changes</button>
+								<button type="button" class="btn btn-default pull-right" data-dismiss="modal" style="margin-right:10px;">Close</button>
+							</div>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>
@@ -89,10 +97,6 @@
 		$('#editModalRole').val(role);
 		$('#editModal').modal('show');
 	}
-
-	$('#editModalSavebutton').click(function(){
-		$('form#editModalForm')[0].submit();
-	});
 	</script>
 
 {% endblock %}
