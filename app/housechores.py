@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 app.config.from_object('config')
 app.config.from_envvar('HOUSECHORESETTINGS', silent=True)
+app.config.from_object('version')
 app.debug=app.config['DEBUG']
 toolbar=DebugToolbarExtension(app)
 
@@ -176,7 +177,7 @@ app.jinja_env.filters['dayssince'] = dayssince
 @app.route('/')
 def index():
     logging.debug('returning index')
-    return render_template('index.html',is_admin=check_admin(g.current_user))
+    return render_template('index.html',is_admin=check_admin(g.current_user), appversion=app.config['APPVERSION'], dbversion=app.config['DBVERSION'])
 
 @app.route('/initdb')
 def initdb():
@@ -314,7 +315,7 @@ def overview():
     rows=cursor.fetchall()
     rows=[dict(id=-1,action_date=None, person_name=None,chore='No chores yet')] if len(rows)==0 else rows
     today=datetime.today().strftime('%Y-%m-%d')
-    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,is_admin=check_admin(g.current_user))
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,is_admin=check_admin(g.current_user), appversion=app.config['APPVERSION'], dbversion=app.config['DBVERSION'])
 
 @app.route('/chores_lastaction')
 def chores_lastaction():
@@ -325,7 +326,7 @@ def chores_lastaction():
     db=get_db()
     cursor=db.execute('select * from chores_lastaction')
     rows=cursor.fetchall()
-    return render_template('chores_lastaction.html', rows=rows,is_admin=check_admin(g.current_user))
+    return render_template('chores_lastaction.html', rows=rows,is_admin=check_admin(g.current_user), appversion=app.config['APPVERSION'], dbversion=app.config['DBVERSION'])
 
 @app.route('/user_admin')
 def user_admin():
@@ -336,7 +337,7 @@ def user_admin():
         if check_admin(g.current_user):
             users=get_users_role();
             roles=get_roles()
-            return render_template('user_admin.html', users=users, roles=roles,is_admin=check_admin(g.current_user))
+            return render_template('user_admin.html', users=users, roles=roles,is_admin=check_admin(g.current_user), appversion=app.config['APPVERSION'], dbversion=app.config['DBVERSION'])
     return redirect (url_for('index'))
 
 #ACTIONS
