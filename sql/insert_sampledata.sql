@@ -1,9 +1,7 @@
-insert into persons values (-1,'none','',-1);
 insert into persons values (2,'rob','rob',1);
 insert into persons values (3,'anne','anne',1);
 insert into persons values (4,'random','asd',2);
 
-insert into chores values (-1,'none');
 insert into chores values (1,'dishes');
 insert into chores values (2,'vacuum');
 insert into chores values (3,'groceries jumbo');
