@@ -454,5 +454,13 @@ def test_download_database(client):
     assert b'admin' in rv.data
     assert b'2015-08-01' in rv.data
 
+### version numbers
+def test_version_numbers(client):
+    login(client)
+    rv=client.get('/')
+    assert b'Current version of application' in rv.data
+    assert b'Current version of database' in rv.data
+
+
 if __name__=='__main__':
     pytest.main(['-vv'])
