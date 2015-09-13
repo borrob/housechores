@@ -13,6 +13,7 @@ drop table if exists actions;
 drop table if exists persons;
 drop table if exists chores;
 drop table if exists roles;
+drop table if exists meta;
 
 --create new tables
 
@@ -174,7 +175,15 @@ create view xml_output as
 	select * from xml_actions
 ;
 
+create table meta (
+	key text,
+	message text
+);
+
 --insert standard data
 insert into roles values (1, 'admin');
 insert into roles values (2,'user');
 insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1);
+
+insert into meta values ('appversion','0.2.1');
+insert into meta values ('dbversion','0.2.1');
