@@ -352,11 +352,10 @@ def user_admin():
     return redirect (url_for('index'))
 
 #ACTIONS
-@app.route('/new_action', methods=['POST'])
+@app.route('/new_action', methods=['GET', 'POST'])
 def new_action():
     """Get the URL request with the data for a newly performed action
 
-    TODO: check SQL-injection
     TODO: validate dataentry
     """
     try:
@@ -388,7 +387,6 @@ def edit_action():
 
     The POST data should contain the action_id and the new chore description
 
-    TODO: check SQL injection
     TODO: validate dataentry
     """
     try:
@@ -450,7 +448,6 @@ def delete_chore(id=0):
 def new_chore():
     """Get the URL request with data for a new chore
 
-    TODO: check SQL-injection
     TODO: validate dataentry
     """
     try:
@@ -471,7 +468,6 @@ def edit_chore():
 
     The POST data should contain the chore_id and the new chore description
 
-    TODO: check SQL injection
     TODO: validate dataentry
     """
     try:
@@ -491,7 +487,6 @@ def edit_chore():
 def new_user():
     """Get the URL request with data for a new user
 
-    TODO: check SQL-injection
     TODO: validate dataentry
     """
     try:
@@ -529,7 +524,6 @@ def edit_user():
 
     The POST data should contain the user_id and the new user
 
-    TODO: check SQL injection
     TODO: validate dataentry
     """
     try:
