@@ -368,6 +368,19 @@ def test_add_user(client):
     assert b'Welcome to the house chores' in rv.data
     assert b'Wrong username / password combination' not in rv.data
 
+def test_add_user_with_double_name(client):
+    """Test adding a new user
+    """
+    login(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>dude</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
+    rv=client.post('/new_user', data=dict(name='dude', roles=2), follow_redirects=True)
+    assert b'New user added' in rv.data
+    assert b'<td>dude</td><td>user</td>' in rv.data.replace('\n','').replace('\t','')
+    rv=client.post('/new_user', data=dict(name='dude', roles=2), follow_redirects=True)
+    assert b'already exists' in rv.data
+    assert b'New user added' not in rv.data
+
 def test_add_user_non_admin(client):
     """Test adding a new user as normal user
     """
@@ -420,6 +433,19 @@ def test_edit_user(client):
     rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3, passw=''), follow_redirects=True)
     assert b'User updated' in rv.data
     assert b'<td>newname</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
+
+def test_edit_user_to_existing_username(client):
+    """Test user chore
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>newname</td>' not in rv.data
+    assert b'<td>newname</td><td>admin</td>' not in rv.data.replace('\n','').replace('\t','')
+    #edit user
+    rv=client.post('/edit_user', data=dict(person='admin', role=1, id=3, passw=''), follow_redirects=True)
+    assert b'already exists' in rv.data
+    assert b'User updated' not in rv.data
 
 def test_edit_user_non_admin(client):
     """Test user chore as normal user
