@@ -356,7 +356,6 @@ def user_admin():
 def new_action():
     """Get the URL request with the data for a newly performed action
 
-    TODO: check loging
     TODO: check SQL-injection
     TODO: validate dataentry
     """
@@ -389,7 +388,6 @@ def edit_action():
 
     The POST data should contain the action_id and the new chore description
 
-    TODO: check login
     TODO: check SQL injection
     TODO: validate dataentry
     """
@@ -531,7 +529,6 @@ def edit_user():
 
     The POST data should contain the user_id and the new user
 
-    TODO: check login
     TODO: check SQL injection
     TODO: validate dataentry
     """
