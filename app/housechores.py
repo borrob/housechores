@@ -351,6 +351,25 @@ def user_admin():
             return render_template('user_admin.html', users=users, roles=roles,is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
     return redirect (url_for('index'))
 
+@app.route('/stats')
+def stats():
+    logging.debug('Generating the stats page')
+    db=get_db()
+    cursor=db.execute('select * from top_chores')
+    rows=cursor.fetchall()
+    counter=range(len(rows)+1)
+    counter.pop(0)
+    rowsWithId=zip(counter,rows)
+    cursor=db.execute('select min(action_date) from actions')
+    daysSince=dayssince(cursor.fetchone()[0])
+    cursor=db.execute('select * from top_chores_per_user')
+    rows=cursor.fetchall()
+    counter=range(len(rows)+1)
+    counter.pop(0)
+    rowspers=zip(counter,rows)
+    return render_template('stats.html', rows=rowsWithId, rowspers=rowspers,days=daysSince, is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
+
+
 #ACTIONS
 @app.route('/new_action', methods=['GET', 'POST'])
 def new_action():
