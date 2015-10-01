@@ -177,6 +177,7 @@ create view xml_output as
 	select * from xml_actions
 ;
 
+--top chores
 create view top_chores as
 	select
 		c.name,
@@ -196,7 +197,7 @@ create view top_chores as
 create view top_chores_per_user as
 	select
 		c.name,
-		u.name,
+		u.name as person,
 		count(*) as aantal
 	from
 		actions as a
@@ -225,5 +226,5 @@ insert into roles values (1, 'admin');
 insert into roles values (2,'user');
 insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1);
 
-insert into meta values ('appversion','0.2.1');
-insert into meta values ('dbversion','0.2.1');
+insert into meta values ('appversion','0.x');
+insert into meta values ('dbversion','0.x');
