@@ -41,5 +41,6 @@ create view top_chores_per_user as
 ;
 
 --insert standard data
+delete from meta;
 insert into meta values ('appversion','0.x');
 insert into meta values ('dbversion','0.x');
