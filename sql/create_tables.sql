@@ -9,6 +9,8 @@ drop view if exists xml_actions;
 drop view if exists xml_persons;
 drop view if exists xml_chores;
 drop view if exists xml_roles;
+drop view if exists top_chores;
+drop view if exists top_chores_per_user;
 drop table if exists actions;
 drop table if exists persons;
 drop table if exists chores;
@@ -175,6 +177,45 @@ create view xml_output as
 	select * from xml_actions
 ;
 
+--top chores
+create view top_chores as
+	select
+		c.name,
+		count(*) as aantal
+	from
+		actions as a
+	left join
+		chores as c
+	on
+		a.chore_id=c.id
+	group by
+		c.name
+	order by
+		count(*) DESC
+;
+
+create view top_chores_per_user as
+	select
+		c.name,
+		u.name as person,
+		count(*) as aantal
+	from
+		actions as a
+	left join
+		chores as c
+	on
+		a.chore_id=c.id
+	left join
+		persons as u
+	on
+		a.person_id=u.id
+	group by
+		c.name,
+		u.name
+	order by
+		count(*) desc
+;
+
 create table meta (
 	key text,
 	message text
@@ -185,5 +226,5 @@ insert into roles values (1, 'admin');
 insert into roles values (2,'user');
 insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1);
 
-insert into meta values ('appversion','0.2.1');
-insert into meta values ('dbversion','0.2.1');
+insert into meta values ('appversion','0.x');
+insert into meta values ('dbversion','0.x');

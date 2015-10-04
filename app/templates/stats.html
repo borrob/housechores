@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+	<h2>Statistics</h2>
+	<h3>Top chores</h3>
+	<table class="table table-striped">
+		<tr>
+			<th></th>
+			<th data-toggle="tooltop" data-placement="bottom" title="Name of the chore">Chore</th>
+			<th data-toggle="tooltop" data-placement="bottom" title="Number of actions on this chore">Count</th>
+			<th>Performed once per ... days</th>
+		</tr>
+
+		{% for row in rows %}
+			<tr>
+				<td>{{ row[0] }}</td>
+				<td>{{ row[1].name }}</td>
+				<td>{{ row[1].aantal }}</td>
+				<td>{{ days / row[1].aantal }}</td>
+			</tr>
+		{% endfor %}
+	</table>
+	<h3>Who does what?</h3>
+	<table class="table table-striped">
+		<tr>
+			<th></th>
+			<th data-toggle="tooltop" data-placement="bottom" title="Name of the chore">Chore</th>
+			<th data-toggle="tooltop" data-placement="bottom" title="Name of the hero">Person</th>
+			<th data-toggle="tooltop" data-placement="bottom" title="Number of actions on this chore">Count</th>
+		</tr>
+
+		{% for row in rowspers %}
+			<tr>
+				<td>{{ row[0] }}</td>
+				<td>{{ row[1].name }}</td>
+				<td>{{ row[1].person }}</td>
+				<td>{{ row[1].aantal }}</td>
+			</tr>
+		{% endfor %}
+	</table>
+
+{% endblock %}
