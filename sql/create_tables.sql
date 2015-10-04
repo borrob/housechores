@@ -228,3 +228,4 @@ insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1)
 
 insert into meta values ('appversion','0.x');
 insert into meta values ('dbversion','0.x');
+insert into mete values ('actions_per_page','50');

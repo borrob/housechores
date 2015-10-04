@@ -41,6 +41,6 @@ create view top_chores_per_user as
 ;
 
 --insert standard data
-delete from meta;
-insert into meta values ('appversion','0.x');
-insert into meta values ('dbversion','0.x');
+update meta set message='0.x' where key='appversion';
+update meta set message='0.x' where key='dbversion';
+insert into meta values ('actions_per_page','50');
