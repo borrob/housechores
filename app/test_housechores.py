@@ -462,6 +462,18 @@ def test_edit_user_non_admin(client):
     rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3, passw=''), follow_redirects=True)
     assert b'User updated' not in rv.data
 
+### statistics
+def test_show_stats(client):
+    """Test the statistics page
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/stats', follow_redirects=True)
+    assert b'Statistics' in rv.data
+    assert b'Top chores' in rv.data
+    assert b'Who does what' in rv.data
+    assert b'dishes' in rv.data #dishes should be done in sample db
+
 ### download database
 def test_download_database(client):
     """Test the xml download from the database
