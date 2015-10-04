@@ -499,6 +499,25 @@ def test_version_numbers(client):
     assert b'Current version of application' in rv.data
     assert b'Current version of database' in rv.data
 
+### paging
+def test_paging_overview(client):
+    """Test: After loading the sample data, the overview page
+    should show some paging
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/overview')
+    assert b'<td>dishes</td>' in rv.data
+    assert b'Current page' not in rv.data
+    with housechores.app.app_context():
+        db=housechores.get_db()
+        db.execute("update meta set message='3' where key='actions_per_page'")
+        db.commit()
+    rv=client.get('/overview')
+    assert b'<td>dishes</td>' in rv.data
+    assert b'Current page' in rv.data
+    rv=client.get('/overview/2', follow_redirects=True)
+    assert b'Current page' in rv.data
 
 if __name__=='__main__':
     pytest.main(['-vv'])

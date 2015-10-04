@@ -317,16 +317,27 @@ def download_xml():
 
 #PAGES
 @app.route('/overview')
-def overview():
+@app.route('/overview/<page>')
+def overview(page=1):
     """Generate a simple overview of all the actions
+
+    show the page with number = <page>
     """
-    logging.debug('Generating the overview page')
+    page=int(page)
+    logging.debug('Generating the overview page, of page: ' + str(page))
     db=get_db()
-    cursor=db.execute('select * from overview order by action_date desc, chore asc')
+
+    max_actions_per_page=int(db.execute("select message from meta where key='actions_per_page'").fetchone()[0])
+    number_of_actions=int(db.execute("select count(*) from actions").fetchone()[0])
+    max_pages=number_of_actions//max_actions_per_page + 1
+    page=max_pages if page>max_pages else page
+    page=1 if page<1 else page
+
+    cursor=db.execute('select * from overview order by action_date desc, chore asc limit ' + str(max_actions_per_page) + ' offset ' + str((page-1)*max_actions_per_page))
     rows=cursor.fetchall()
     rows=[dict(id=-1,action_date=None, person_name=None,chore='No chores yet')] if len(rows)==0 else rows
     today=datetime.today().strftime('%Y-%m-%d')
-    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,cp=page, np=max_pages, is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
 
 @app.route('/chores_lastaction')
 def chores_lastaction():

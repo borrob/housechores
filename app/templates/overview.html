@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 	<h2>Overview all actions</h2>
+	{% if np>1 %}
+	<div class="row">
+		<center>
+			<a href="{{ url_for('overview', page=1) }}"><span class="glyphicon glyphicon-step-backward" title="Go to first page"></span></a>
+			<a href="{{ url_for('overview', page=cp-1) }}"><span class="glyphicon glyphicon-backward" title="Go to previous page"></span></a>
+			Current page: {{cp}} of {{np}}
+			<a href="{{ url_for('overview', page=cp+1) }}"><span class="glyphicon glyphicon-forward" title="Go to next page"></span></a>
+			<a href="{{ url_for('overview', page=1000) }}"><span class="glyphicon glyphicon-step-forward" title="Go to last page"></span></a>
+		</center>
+	</div>
+	{% endif %}
 	<table class="table table-striped">
 		<tr>
 			<th data-toggle="tooltop" data-placement="bottom" title="Date of the chore">Date</th>
@@ -49,6 +60,17 @@
 			</tr>
 		{% endfor %}
 	</table>
+	{% if np>1 %}
+	<div class="row">
+		<center>
+			<a href="{{ url_for('overview', page=1) }}"><span class="glyphicon glyphicon-step-backward" title="Go to first page"></span></a>
+			<a href="{{ url_for('overview', page=cp-1) }}"><span class="glyphicon glyphicon-backward" title="Go to previous page"></span></a>
+			Current page: {{cp}} of {{np}}
+			<a href="{{ url_for('overview', page=cp+1) }}"><span class="glyphicon glyphicon-forward" title="Go to next page"></span></a>
+			<a href="{{ url_for('overview', page=1000) }}"><span class="glyphicon glyphicon-step-forward" title="Go to last page"></span></a>
+		</center>
+	</div>
+	{% endif %}
 
 	<!-- editModal -->
 	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
