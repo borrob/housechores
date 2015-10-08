@@ -47,7 +47,7 @@ def get_chores():
     """Get a list of the current chores
     """
     db=get_db()
-    cursor=db.execute('select *from chores where id>=0')
+    cursor=db.execute('select * from chores where id>=0')
     rows=cursor.fetchall()
     logging.debug('Getting the chores list')
     return rows
@@ -81,25 +81,29 @@ def get_roles():
 
 def get_userid(name):
     """Get the userid from person with name=name
-
-    TODO: check if database and schema exist
     """
-    db=get_db()
-    cursor = db.execute('select id from persons where name=?',[name])
-    row=cursor.fetchone()
-    logging.debug('Getting the userid for user: ' + name)
-    return row[0]
+    try:
+        db=get_db()
+        cursor = db.execute('select id from persons where name=?',[name])
+        row=cursor.fetchone()
+        logging.debug('Getting the userid for user: ' + name)
+        return row[0]
+    except:
+        logging.critical('Error with getting userid from database')
+        raise
 
 def get_choreid(chore):
     """Get the choreid from chore with name=name
-
-    TODO: check if database and schema exist
     """
-    db=get_db()
-    logging.debug('getting the chore_id for a specific chore: ' + chore)
-    cursor = db.execute('select id from chores where name=?',[chore])
-    row=cursor.fetchone()
-    return row[0]
+    try:
+        db=get_db()
+        logging.debug('getting the chore_id for a specific chore: ' + chore)
+        cursor = db.execute('select id from chores where name=?',[chore])
+        row=cursor.fetchone()
+        return row[0]
+    except:
+        logging.critical('Error with getthing the chore id from the database')
+        raise
 
 def check_login(user, password):
     """Check the provided username and password
@@ -201,16 +205,17 @@ def initdb():
 @app.route('/filldbsampledata')
 def fill_db_sample_data():
     """fill the database with sample data
-
-    TODO: check if database exists and tables ares present
     """
     db=get_db()
     if check_admin(g.current_user):
-        with app.open_resource('../sql/insert_sampledata.sql','r') as f:
-            logging.warning('inserting sample data in database')
-            db.cursor().executescript(f.read())
-        db.commit()
-        flash('Filled database with sample data','warning')
+        try:
+            with app.open_resource('../sql/insert_sampledata.sql','r') as f:
+                logging.warning('inserting sample data in database')
+                db.cursor().executescript(f.read())
+            db.commit()
+            flash('Filled database with sample data','warning')
+        except:
+            logging.critical('Error with filling the sample database.')
     if request.referrer:
         #refresh the referring page
         return redirect(request.referrer)
@@ -260,7 +265,6 @@ def login():
 def logout():
     """Log out
     """
-    #TODO write before_request and then we can use the g.current_user
     logging.info('User %s trying to log out' %(g.current_user))
     session.pop('uid')
     g.current_user=None
@@ -270,18 +274,21 @@ def logout():
 @app.route('/export_xml')
 def export_xml():
     """Export the database as XML
-    TODO: check database and schemas
     """
     if check_admin(g.current_user):
-        db=get_db()
-        cur=db.execute('select * from xml_output')
-        rows=cur.fetchall()
-        writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
-        with open(writefile,'w') as f:
-            for row in rows:
-                f.write(row[0] + '\n')
-        logging.debug('Fetching the database as xml output.')
-        flash(Markup('You can download the xml <a download href="' + url_for('download_xml') + '" target="_blank">file here</a>.'), 'info')
+        try:
+            db=get_db()
+            cur=db.execute('select * from xml_output')
+            rows=cur.fetchall()
+            writefile=app.config['XMLEXPORT']+'_' + str(g.current_user) + '.xml'
+            with open(writefile,'w') as f:
+                for row in rows:
+                    f.write(row[0] + '\n')
+            logging.debug('Fetching the database as xml output.')
+            flash(Markup('You can download the xml <a download href="' + url_for('download_xml') + '" target="_blank">file here</a>.'), 'info')
+        except:
+            logging.critical('Error with exporting as xml')
+            raise
     if request.referrer:
         #refresh the referring page
         return redirect(request.referrer)
@@ -310,16 +317,27 @@ def download_xml():
 
 #PAGES
 @app.route('/overview')
-def overview():
+@app.route('/overview/<page>')
+def overview(page=1):
     """Generate a simple overview of all the actions
+
+    show the page with number = <page>
     """
-    logging.debug('Generating the overview page')
+    page=int(page)
+    logging.debug('Generating the overview page, of page: ' + str(page))
     db=get_db()
-    cursor=db.execute('select * from overview order by action_date desc, chore asc')
+
+    max_actions_per_page=int(db.execute("select message from meta where key='actions_per_page'").fetchone()[0])
+    number_of_actions=int(db.execute("select count(*) from actions").fetchone()[0])
+    max_pages=number_of_actions//max_actions_per_page + 1
+    page=max_pages if page>max_pages else page
+    page=1 if page<1 else page
+
+    cursor=db.execute('select * from overview order by action_date desc, chore asc limit ' + str(max_actions_per_page) + ' offset ' + str((page-1)*max_actions_per_page))
     rows=cursor.fetchall()
     rows=[dict(id=-1,action_date=None, person_name=None,chore='No chores yet')] if len(rows)==0 else rows
     today=datetime.today().strftime('%Y-%m-%d')
-    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,cp=page, np=max_pages, is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
 
 @app.route('/chores_lastaction')
 def chores_lastaction():
@@ -344,24 +362,41 @@ def user_admin():
             return render_template('user_admin.html', users=users, roles=roles,is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
     return redirect (url_for('index'))
 
+@app.route('/stats')
+def stats():
+    logging.debug('Generating the stats page')
+    db=get_db()
+    cursor=db.execute('select * from top_chores')
+    rows=cursor.fetchall()
+    counter=range(len(rows)+1)
+    counter.pop(0)
+    rowsWithId=zip(counter,rows)
+    cursor=db.execute('select min(action_date) from actions')
+    daysSince=dayssince(cursor.fetchone()[0])
+    cursor=db.execute('select * from top_chores_per_user')
+    rows=cursor.fetchall()
+    counter=range(len(rows)+1)
+    counter.pop(0)
+    rowspers=zip(counter,rows)
+    return render_template('stats.html', rows=rowsWithId, rowspers=rowspers,days=daysSince, is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
+
+
 #ACTIONS
-@app.route('/new_action', methods=['POST'])
+@app.route('/new_action', methods=['GET', 'POST'])
 def new_action():
     """Get the URL request with the data for a newly performed action
-
-    TODO: check loging
-    TODO: check if database and schemas exist
-    TODO: check SQL-injection
-    TODO: validate dataentry
-    TODO: add try/catch
     """
-    db=get_db()
-    db.execute('insert into actions (action_date, person_id, chore_id) values (?, ?, ?)',
-        [request.form['date'], request.form['person'], request.form['chore']])
-    db.commit()
-    flash('New action added', 'success')
-    logging.info('New action added')
-    return redirect(url_for('overview'))
+    try:
+        db=get_db()
+        db.execute('insert into actions (action_date, person_id, chore_id) values (?, ?, ?)',
+            [request.form['date'], request.form['person'], request.form['chore']])
+        db.commit()
+        flash('New action added', 'success')
+        logging.info('New action added')
+        return redirect(url_for('overview'))
+    except:
+        logging.critical('Error with inserting new action.')
+        raise
 
 @app.route('/delete_action/<id>')
 def delete_action(id):
@@ -379,35 +414,38 @@ def edit_action():
     """Edit the action from the post request
 
     The POST data should contain the action_id and the new chore description
-    TODO: check login
-    TODO: check if database and schemas exist
-    TODO: check SQL injection
-    TODO: validate dataentry
-    TODO: add try/catch
     """
-    db=get_db()
-    choreid=get_choreid(request.form['chore'])
-    personid=get_userid(request.form['person'])
-    db.execute('update actions set chore_id=?, action_date=?, person_id=? where id=?',[choreid,request.form['date'],personid, request.form['id']])
-    db.commit()
-    flash('Updated action','success')
-    logging.info('Updated action with id=%s' %(request.form['id']))
-    return redirect(url_for('overview'))
+    try:
+        db=get_db()
+        choreid=get_choreid(request.form['chore'])
+        personid=get_userid(request.form['person'])
+        db.execute('update actions set chore_id=?, action_date=?, person_id=? where id=?',[choreid,request.form['date'],personid, request.form['id']])
+        db.commit()
+        flash('Updated action','success')
+        logging.info('Updated action with id=%s' %(request.form['id']))
+        return redirect(url_for('overview'))
+    except:
+        logging.critical('Error with updating action.')
+        raise
 
 @app.route('/copy_to_today/<id>')
 def copy_to_today(id):
     """copy the action with action_id=<id> to today
     """
-    db=get_db()
-    cursor=db.execute('select * from actions where id = ?', [id])
-    row=cursor.fetchone()
-    chore=row['chore_id']
-    today=str(date.today().strftime('%Y-%m-%d'))
-    db.execute('insert into actions (action_date,person_id,chore_id) values (?,?,?)' ,[today, g.current_user, chore])
-    db.commit()
-    flash('Action copied to today','success')
-    logging.info('Action with id %s copied to today' %id)
-    return redirect(url_for('overview'))
+    try:
+        db=get_db()
+        cursor=db.execute('select * from actions where id = ?', [id])
+        row=cursor.fetchone()
+        chore=row['chore_id']
+        today=str(date.today().strftime('%Y-%m-%d'))
+        db.execute('insert into actions (action_date,person_id,chore_id) values (?,?,?)' ,[today, g.current_user, chore])
+        db.commit()
+        flash('Action copied to today','success')
+        logging.info('Action with id %s copied to today' %id)
+        return redirect(url_for('overview'))
+    except:
+        logging.critical('Error with copying action to today.')
+        raise
 
 #CHORES
 @app.route('/new_from_chore/<id>')
@@ -439,56 +477,62 @@ def delete_chore(id=0):
 @app.route('/new_chore', methods=['POST'])
 def new_chore():
     """Get the URL request with data for a new chore
-    TODO: check if database and schemas exist
-    TODO: check SQL-injection
-    TODO: validate dataentry
-    TODO: add try/catch
     """
-    if check_admin(g.current_user):
-        db=get_db()
-        db.execute('insert into chores (name) values (?)',[request.form['chore']])
-        db.commit()
-        flash('New chore added', 'success')
-        logging.info('New chore added: %s' %(request.form['chore']))
-    return redirect(url_for('chores_lastaction'))
+    try:
+        if check_admin(g.current_user):
+            db=get_db()
+            db.execute('insert into chores (name) values (?)',[request.form['chore']])
+            db.commit()
+            flash('New chore added', 'success')
+            logging.info('New chore added: %s' %(request.form['chore']))
+        return redirect(url_for('chores_lastaction'))
+    except:
+        logging.critical('Error with adding new chore.')
+        raise
 
 @app.route('/edit_chore',methods=['POST'])
 def edit_chore():
     """Edit a chore
 
     The POST data should contain the chore_id and the new chore description
-    TODO: check if database and schemas exist
-    TODO: check SQL injection
-    TODO: validate dataentry
-    TODO: add try/catch
     """
-    if check_admin(g.current_user):
-        db=get_db()
-        db.execute('update chores set name = ? where id = ?',[request.form['chore'], request.form['id']])
-        db.commit()
-        flash('Chore updated', 'success')
-        logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
-    return redirect(url_for('chores_lastaction'))
+    try:
+        if check_admin(g.current_user):
+            db=get_db()
+            db.execute('update chores set name = ? where id = ?',[request.form['chore'], request.form['id']])
+            db.commit()
+            flash('Chore updated', 'success')
+            logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
+        return redirect(url_for('chores_lastaction'))
+    except:
+        logging.critical('Error with updating chore.')
+        raise
 
 #USERS
 @app.route('/new_user', methods=['POST'])
 def new_user():
     """Get the URL request with data for a new user
-    TODO: check if database and schemas exist
-    TODO: check SQL-injection
-    TODO: validate dataentry
-    TODO: add try/catch
     """
-    if check_admin(g.current_user):
-        db=get_db()
-        db.execute('insert into persons (name, password, role_id) values (?,?,?)',[request.form['name'], 'resu', request.form['roles']])
-        db.commit()
-        flash('New user added, password: resu', 'success')
-        flash('Please change the password','danger')
-        logging.info('New user added: %s' %(request.form['name']))
-        return redirect(url_for('user_admin'))
-    else:
-        return redirect(url_for('index'))
+    try:
+        if check_admin(g.current_user):
+            db=get_db()
+            cursor=db.execute('select count(*) from persons where name=?', [request.form['name']])
+            rows=cursor.fetchall()
+            if rows[0][0]!=0:
+                flash('Username already exists, try something else.','warning')
+                return redirect(url_for('user_admin'))
+            else:
+                db.execute('insert into persons (name, password, role_id) values (?,?,?)',[request.form['name'], 'resu', request.form['roles']])
+                db.commit()
+                flash('New user added, password: resu', 'success')
+                flash('Please change the password','danger')
+                logging.info('New user added: %s' %(request.form['name']))
+                return redirect(url_for('user_admin'))
+        else:
+            return redirect(url_for('index'))
+    except:
+        logging.critical('Error with adding new user.')
+        raise
 
 @app.route('/delete_user/<id>')
 def delete_user(id):
@@ -509,25 +553,30 @@ def edit_user():
     """Edit a user
 
     The POST data should contain the user_id and the new user
-    TODO: check login
-    TODO: check if database and schemas exist
-    TODO: check SQL injection
-    TODO: validate dataentry
-    TODO: add try/catch
     """
-    if check_admin(g.current_user):
-        db=get_db()
-        if request.form['passw'] and len(request.form['passw'])>3:
-            # checking if password is filled in
-            db.execute('update persons set name = ?, password= ? , role_id= ? where id = ?',[request.form['person'], request.form['passw'], request.form['role'], request.form['id']])
+    try:
+        if check_admin(g.current_user):
+            db=get_db()
+            cursor=db.execute('select count(*) from persons where name=? and id!=?', [request.form['person'], request.form['id']])
+            rows=cursor.fetchall()
+            if rows[0][0]!=0:
+                flash('Username already exists, try something else.','warning')
+                return redirect(url_for('user_admin'))
+            else:
+                if request.form['passw'] and len(request.form['passw'])>3:
+                    # checking if password is filled in
+                    db.execute('update persons set name = ?, password= ? , role_id= ? where id = ?',[request.form['person'], request.form['passw'], request.form['role'], request.form['id']])
+                else:
+                    db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
+                db.commit()
+                flash('User updated', 'success')
+                logging.info('Edited user with id=%s' %(request.form['id']))
+                return redirect(url_for('user_admin'))
         else:
-            db.execute('update persons set name = ?, role_id= ? where id = ?',[request.form['person'], request.form['role'], request.form['id']])
-        db.commit()
-        flash('User updated', 'success')
-        logging.info('Edited user with id=%s' %(request.form['id']))
-        return redirect(url_for('user_admin'))
-    else:
-        return redirect(url_for('index'))
+            return redirect(url_for('index'))
+    except:
+        logging.critical('Error with editing new user.')
+        raise
 
 ################################################################################
 # RUN

@@ -368,6 +368,19 @@ def test_add_user(client):
     assert b'Welcome to the house chores' in rv.data
     assert b'Wrong username / password combination' not in rv.data
 
+def test_add_user_with_double_name(client):
+    """Test adding a new user
+    """
+    login(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>dude</td><td>user</td>' not in rv.data.replace('\n','').replace('\t','')
+    rv=client.post('/new_user', data=dict(name='dude', roles=2), follow_redirects=True)
+    assert b'New user added' in rv.data
+    assert b'<td>dude</td><td>user</td>' in rv.data.replace('\n','').replace('\t','')
+    rv=client.post('/new_user', data=dict(name='dude', roles=2), follow_redirects=True)
+    assert b'already exists' in rv.data
+    assert b'New user added' not in rv.data
+
 def test_add_user_non_admin(client):
     """Test adding a new user as normal user
     """
@@ -421,6 +434,19 @@ def test_edit_user(client):
     assert b'User updated' in rv.data
     assert b'<td>newname</td><td>admin</td>' in rv.data.replace('\n','').replace('\t','')
 
+def test_edit_user_to_existing_username(client):
+    """Test user chore
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/user_admin', follow_redirects=True)
+    assert b'<td>newname</td>' not in rv.data
+    assert b'<td>newname</td><td>admin</td>' not in rv.data.replace('\n','').replace('\t','')
+    #edit user
+    rv=client.post('/edit_user', data=dict(person='admin', role=1, id=3, passw=''), follow_redirects=True)
+    assert b'already exists' in rv.data
+    assert b'User updated' not in rv.data
+
 def test_edit_user_non_admin(client):
     """Test user chore as normal user
     """
@@ -435,6 +461,18 @@ def test_edit_user_non_admin(client):
     #edit user
     rv=client.post('/edit_user', data=dict(person='newname', role=1, id=3, passw=''), follow_redirects=True)
     assert b'User updated' not in rv.data
+
+### statistics
+def test_show_stats(client):
+    """Test the statistics page
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/stats', follow_redirects=True)
+    assert b'Statistics' in rv.data
+    assert b'Top chores' in rv.data
+    assert b'Who does what' in rv.data
+    assert b'dishes' in rv.data #dishes should be done in sample db
 
 ### download database
 def test_download_database(client):
@@ -461,6 +499,25 @@ def test_version_numbers(client):
     assert b'Current version of application' in rv.data
     assert b'Current version of database' in rv.data
 
+### paging
+def test_paging_overview(client):
+    """Test: After loading the sample data, the overview page
+    should show some paging
+    """
+    login(client)
+    sample_db(client)
+    rv=client.get('/overview')
+    assert b'<td>dishes</td>' in rv.data
+    assert b'Current page' not in rv.data
+    with housechores.app.app_context():
+        db=housechores.get_db()
+        db.execute("update meta set message='3' where key='actions_per_page'")
+        db.commit()
+    rv=client.get('/overview')
+    assert b'<td>dishes</td>' in rv.data
+    assert b'Current page' in rv.data
+    rv=client.get('/overview/2', follow_redirects=True)
+    assert b'Current page' in rv.data
 
 if __name__=='__main__':
     pytest.main(['-vv'])
