@@ -56,8 +56,10 @@ create view overview as
 		a.id,
 		a.action_date,
 		p.name as person_name,
+		p.id as person_id,
 		r.name as role,
-		c.name as chore
+		c.name as chore,
+		c.id as chore_id
 	from
 		actions as a
 	left join

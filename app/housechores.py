@@ -316,8 +316,8 @@ def download_xml():
             return redirect (url_for('index'))
 
 #PAGES
-@app.route('/overview')
-@app.route('/overview/<page>')
+@app.route('/overview', methods=['GET'])
+@app.route('/overview/<page>', methods=['GET'])
 def overview(page=1):
     """Generate a simple overview of all the actions
 
@@ -327,13 +327,22 @@ def overview(page=1):
     logging.debug('Generating the overview page, of page: ' + str(page))
     db=get_db()
 
+    extraSql=''
+    if request.args.get('chore'):
+        extraSql=' where chore_id = ' + request.args.get('chore')
+    if request.args.get('person'):
+        if len(extraSql)==0:
+            extraSql = ' where person_id = ' + request.args.get('person')
+        else:
+            extraSql += ' and person_id = ' + request.args.get('person')
+
     max_actions_per_page=int(db.execute("select message from meta where key='actions_per_page'").fetchone()[0])
-    number_of_actions=int(db.execute("select count(*) from actions").fetchone()[0])
+    number_of_actions=int(db.execute("select count(*) from actions" + extraSql).fetchone()[0])
     max_pages=number_of_actions//max_actions_per_page + 1
     page=max_pages if page>max_pages else page
     page=1 if page<1 else page
 
-    cursor=db.execute('select * from overview order by action_date desc, chore asc limit ' + str(max_actions_per_page) + ' offset ' + str((page-1)*max_actions_per_page))
+    cursor=db.execute('select * from overview ' + extraSql + ' order by action_date desc, chore asc limit ' + str(max_actions_per_page) + ' offset ' + str((page-1)*max_actions_per_page))
     rows=cursor.fetchall()
     rows=[dict(id=-1,action_date=None, person_name=None,chore='No chores yet')] if len(rows)==0 else rows
     today=datetime.today().strftime('%Y-%m-%d')
