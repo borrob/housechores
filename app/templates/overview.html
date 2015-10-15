@@ -20,19 +20,19 @@
 			<th></th>
 		</tr>
 		<tr class="success">
-			<form action="" method="POST">
+			<form action="{{ url_for('overview')}}" method="GET">
 				<td>
 					Filter
 				</td>
 				<td>
-					<select name="person" data-toggle="tooltop" data-placement="bottom" title="who did the chore">
+					<select name="person" onchange='this.form.submit()' data-toggle="tooltop" data-placement="bottom" title="who did the chore">
 						<option/>
 						{% for user in users %}
 							<option value='{{user.id}}'>{{user.name}}</option>
 						{% endfor %}
 					</select>
 				<td>
-					<select name="chore" data-toggle="tooltop" data-placement="bottom" title="what chore">
+					<select name="chore" onchange="this.form.submit()" data-toggle="tooltop" data-placement="bottom" title="what chore">
 						<option/>
 						{% for chore in chores %}
 							<option value='{{chore.id}}'>{{chore.name}}</option>
