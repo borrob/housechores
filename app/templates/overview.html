@@ -25,14 +25,14 @@
 					Filter
 				</td>
 				<td>
-					<select name="person" onchange='this.form.submit()' data-toggle="tooltop" data-placement="bottom" title="who did the chore">
+					<select id='filterperson' name="person" onchange='this.form.submit()' data-toggle="tooltop" data-placement="bottom" title="who did the chore">
 						<option/>
 						{% for user in users %}
 							<option value='{{user.id}}'>{{user.name}}</option>
 						{% endfor %}
 					</select>
 				<td>
-					<select name="chore" onchange="this.form.submit()" data-toggle="tooltop" data-placement="bottom" title="what chore">
+					<select id='filterchore' name="chore" onchange="this.form.submit()" data-toggle="tooltop" data-placement="bottom" title="what chore">
 						<option/>
 						{% for chore in chores %}
 							<option value='{{chore.id}}'>{{chore.name}}</option>
@@ -160,6 +160,15 @@
 		$('#editModalDate').val(the_date);
 		$('#editModal').modal('show');
 	}
+
+	if ({{ personid }} >= 0) {
+		$('#filterperson').val({{personid}});
+	}
+
+	if ({{choreid}} >= 0) {
+		$('#filterchore').val({{choreid}});
+	}
+
 	</script>
 
 {% endblock %}

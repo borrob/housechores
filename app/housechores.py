@@ -328,9 +328,13 @@ def overview(page=1):
     db=get_db()
 
     extraSql=''
+    personid=-1
+    choreid=-1
     if request.args.get('chore'):
         extraSql=' where chore_id = ' + request.args.get('chore')
+        choreid=int(request.args.get('chore'))
     if request.args.get('person'):
+        personid=int(request.args.get('person'))
         if len(extraSql)==0:
             extraSql = ' where person_id = ' + request.args.get('person')
         else:
@@ -346,7 +350,7 @@ def overview(page=1):
     rows=cursor.fetchall()
     rows=[dict(id=-1,action_date=None, person_name=None,chore='No chores yet')] if len(rows)==0 else rows
     today=datetime.today().strftime('%Y-%m-%d')
-    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,cp=page, np=max_pages, is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
+    return render_template('overview.html', rows=rows, chores=get_chores(), users=get_users(), today=today,cp=page, np=max_pages, choreid=choreid, personid=personid,is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
 
 @app.route('/chores_lastaction')
 def chores_lastaction():
