@@ -195,6 +195,8 @@ def initdb():
     if check_admin(g.current_user):
         init_the_db()
         flash('Created new database','warning')
+    else:
+        flash('You have to be admin to init the database','error')
     if request.referrer:
         #refresh the referring page
         return redirect(request.referrer)
@@ -216,6 +218,8 @@ def fill_db_sample_data():
             flash('Filled database with sample data','warning')
         except:
             logging.critical('Error with filling the sample database.')
+    else
+        flash('You have to be admin to fill the database with sample data','error')
     if request.referrer:
         #refresh the referring page
         return redirect(request.referrer)
@@ -289,6 +293,8 @@ def export_xml():
         except:
             logging.critical('Error with exporting as xml')
             raise
+    else:
+        flash('You have to be admin to export as xml','error')
     if request.referrer:
         #refresh the referring page
         return redirect(request.referrer)
@@ -308,7 +314,7 @@ def download_xml():
         response.headers["Content-Disposition"] = '"attachment; filename=' + writefile + '"'
         return response
     else:
-        if request.referrer:
+        if request.referrer
             #refresh the referring page
             return redirect(request.referrer)
         else:
@@ -373,6 +379,8 @@ def user_admin():
             users=get_users_role();
             roles=get_roles()
             return render_template('user_admin.html', users=users, roles=roles,is_admin=check_admin(g.current_user), appversion=g.appversion, dbversion=g.dbversion)
+    else:
+        flash('You hava to be admin to do user administration','error')
     return redirect (url_for('index'))
 
 @app.route('/stats')
@@ -485,6 +493,8 @@ def delete_chore(id=0):
         db.commit()
         flash('Chore removed', 'info')
         logging.info('Removed chore with id=%s' %id)
+    else:
+        flash('You have to be admin to delete a chore','error')
     return redirect( url_for('chores_lastaction'))
 
 @app.route('/new_chore', methods=['POST'])
@@ -498,6 +508,8 @@ def new_chore():
             db.commit()
             flash('New chore added', 'success')
             logging.info('New chore added: %s' %(request.form['chore']))
+        else:
+            flash('You have to be admin to add a new chore','error')
         return redirect(url_for('chores_lastaction'))
     except:
         logging.critical('Error with adding new chore.')
@@ -516,6 +528,8 @@ def edit_chore():
             db.commit()
             flash('Chore updated', 'success')
             logging.info('Edited chore with id=%s to %s' %(request.form['id'], request.form['chore']))
+        else:
+            flash('You have to be admin to edit a chore','error')
         return redirect(url_for('chores_lastaction'))
     except:
         logging.critical('Error with updating chore.')
@@ -542,6 +556,7 @@ def new_user():
                 logging.info('New user added: %s' %(request.form['name']))
                 return redirect(url_for('user_admin'))
         else:
+            flash('You have to be admin to add a new user','error')
             return redirect(url_for('index'))
     except:
         logging.critical('Error with adding new user.')
@@ -559,6 +574,7 @@ def delete_user(id):
         logging.info('Removed user with id=%s' %id)
         return redirect( url_for('user_admin'))
     else:
+        flash('You have to be admin to delete a user','error')
         return redirect(url_for('index'))
 
 @app.route('/edit_user', methods=['POST'])
@@ -586,6 +602,7 @@ def edit_user():
                 logging.info('Edited user with id=%s' %(request.form['id']))
                 return redirect(url_for('user_admin'))
         else:
+            flash('You have to be admin to edit a user','error')
             return redirect(url_for('index'))
     except:
         logging.critical('Error with editing new user.')
