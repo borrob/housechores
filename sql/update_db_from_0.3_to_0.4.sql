@@ -24,3 +24,6 @@ create view overview as
 	on
 		a.chore_id=c.id
 ;
+
+update meta set message='0.4' where key='appversion';
+update meta set message='0.4' where key='dbversion';

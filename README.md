@@ -13,7 +13,7 @@ The application is written in python and makes use of the [Flask microframework]
 Make sure you have python and flask installed. You can start the application by running the python file 'housechores.py' in the 'app' directory. Open a browser and goto [localhost:5000](http://localhost:5000). You can also install the application under apache with the wsgi module. I've included a simple example conf-file for the configuration setup.
 
 ## Current version
-The current version is 0.3.
+The current version is 0.4.
 
 ## Questions and suggestions
 Any questions or suggestions? Let me know. Leave a comment or open an issue. Thank you.

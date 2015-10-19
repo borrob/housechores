@@ -218,7 +218,7 @@ def fill_db_sample_data():
             flash('Filled database with sample data','warning')
         except:
             logging.critical('Error with filling the sample database.')
-    else
+    else:
         flash('You have to be admin to fill the database with sample data','error')
     if request.referrer:
         #refresh the referring page
@@ -314,7 +314,7 @@ def download_xml():
         response.headers["Content-Disposition"] = '"attachment; filename=' + writefile + '"'
         return response
     else:
-        if request.referrer
+        if request.referrer:
             #refresh the referring page
             return redirect(request.referrer)
         else:
