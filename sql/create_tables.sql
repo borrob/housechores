@@ -56,8 +56,10 @@ create view overview as
 		a.id,
 		a.action_date,
 		p.name as person_name,
+		p.id as person_id,
 		r.name as role,
-		c.name as chore
+		c.name as chore,
+		c.id as chore_id
 	from
 		actions as a
 	left join
@@ -226,6 +228,6 @@ insert into roles values (1, 'admin');
 insert into roles values (2,'user');
 insert into persons (id, name, password, role_id) values (1,'admin', 'admin', 1);
 
-insert into meta values ('appversion','0.3');
-insert into meta values ('dbversion','0.3');
+insert into meta values ('appversion','0.4');
+insert into meta values ('dbversion','0.4');
 insert into meta values ('actions_per_page','50');

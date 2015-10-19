@@ -19,6 +19,30 @@
 			<th data-toggle="tooltop" data-placement="bottom" title="What chore">Chore</th>
 			<th></th>
 		</tr>
+		<tr class="success">
+			<form action="{{ url_for('overview')}}" method="GET">
+				<td>
+					Filter
+				</td>
+				<td>
+					<select id='filterperson' name="person" onchange='this.form.submit()' data-toggle="tooltop" data-placement="bottom" title="who did the chore">
+						<option/>
+						{% for user in users %}
+							<option value='{{user.id}}'>{{user.name}}</option>
+						{% endfor %}
+					</select>
+				<td>
+					<select id='filterchore' name="chore" onchange="this.form.submit()" data-toggle="tooltop" data-placement="bottom" title="what chore">
+						<option/>
+						{% for chore in chores %}
+							<option value='{{chore.id}}'>{{chore.name}}</option>
+						{% endfor %}
+					</select>
+				</td>
+				<td>
+				</td>
+		</form>
+		</tr>
 		<tr class="info">
 			<form action="{{ url_for('new_action')}}" method="POST">
 				<td>
@@ -136,6 +160,15 @@
 		$('#editModalDate').val(the_date);
 		$('#editModal').modal('show');
 	}
+
+	if ({{ personid }} >= 0) {
+		$('#filterperson').val({{personid}});
+	}
+
+	if ({{choreid}} >= 0) {
+		$('#filterchore').val({{choreid}});
+	}
+
 	</script>
 
 {% endblock %}
